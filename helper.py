@@ -14,6 +14,7 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # gameDir = rootDir + "/src/types/Game.py"
 # playerDir = rootDir + "/src/types/Player.py"
 
+# imports and returns module given by path
 def import_helper(relPath, name):
     absPath = ROOT_DIR + relPath
 

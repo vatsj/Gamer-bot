@@ -1,14 +1,12 @@
-# import helper
-# ih = helper.import_helper
+from helper import import_helper as ih
 
-import runpy
-runpy.run_module("helper")
-ih = import_helper
+gameDir = "/src/games/TicTactoe.py"
+playerDir = "/src/types/RandomPlayer.py"
 
-gameDir = "/src/types/Game.py"
-playerDir = "/src/types/Player.py"
+game = ih(gameDir, "TicTactoe").T3
+RandomPlayer = ih(playerDir, "RandomPlayer").RandomPlayer
 
-Game = ih(gameDir, "Game").Game
-Player = ih(playerDir, "Player").Player
-
-RandomPlayer = ih("/src/instances/players/Random.py", "Random").RandomPlayer
+game = Game.T3
+players = []
+for i in range(T3.nPlayers):
+    players += RandomPlayer(game)
