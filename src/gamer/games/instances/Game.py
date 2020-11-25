@@ -7,7 +7,7 @@ class Game:
 
 
     # plays an instance of the game, returns winner
-    def play(self, players, render = false):
+    def play(self, players, render = False):
 
         # constructs turnOrder queue
         # turnOrder = queue.Queue(self.nPlayers)
@@ -26,13 +26,22 @@ class Game:
             turnPlayer = players[turnNum - 1]
 
             if render:
-                print("current board")
+                print("\n"*10)
+                print("Current board: \n")
+                print(self.render_gameState(self, gameState))
 
+                print("\n Player ", turnNum, " to move. \n")
 
             # checks for stalemate
             # if so, determines winner
             if len(self.getLegalMoves(self, gameState, turnNum)) == 0:
-                return self.winsStalemate(self, gameState, turnNum)
+                winner = self.winsStalemate(self, gameState, turnNum)
+
+                if render:
+                    print("Player ", turnNum, " has no valid moves!")
+                    print("Thus, player ", winner, " is declared the winner.")
+
+                return winner
 
             # player whose turn it is makes move
             move = turnPlayer.makeMove(gameState)
@@ -41,8 +50,18 @@ class Game:
             else:
                 raise Exception("Illegal move!")
 
+            if render:
+                print("Player ", turnNum, "makes the following move: \t", move)
+
             if (self.checkWin(self, gameState, turnNum)):
-                return turnNum
+                winner = turnNum
+
+                if render:
+                    print("Player ", winner, "has won!")
+                    print("The winning board state is below: \n")
+                    print(self.render_gameState(self, gameState))
+
+                return winner
 
     # vars in order of scale
     # gameState, turnNum, move

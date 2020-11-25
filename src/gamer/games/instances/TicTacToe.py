@@ -135,18 +135,37 @@ def render_gameState(self, gameState):
 
             # fills in center of squares
             if (row_index == square_center and column_index == square_center):
-                square_i = (i - row_index) / (SQUARE_SIZE + 1)
-                square_j = (i - row_index) / (SQUARE_SIZE + 1)
+                square_i = (i - row_index) // (SQUARE_SIZE + 1)
+                square_j = (j - column_index) // (SQUARE_SIZE + 1)
                 square_coords = (square_i, square_j)
 
-                currChar = square_chars[getSquare(gameState, square_coords]
+                currChar = square_chars[getSquare(gameState, square_coords)]
 
             # fills in rows/columns
 
             # indicator variables for rows/columns
             row_ind = (row_index == SQUARE_SIZE)
-            col_ind = (col_index == SQUARE_SIZE)
-            rowcol_ind = (row_ind, column_ind)
+            col_ind = (column_index == SQUARE_SIZE)
+            rowcol_ind = (row_ind, col_ind)
+
+            rowcol_char = rowcol_chars[rowcol_ind]
+            if (rowcol_char):
+                currChar = rowcol_char
+
+            # add currChar to array
+            render_arr[i][j] += currChar
+
+    # converts render_arr to string
+    render_str = ""
+    for i in range(arr_size):
+        for j in range(arr_size):
+            currChar = render_arr[i][j]
+            render_str += currChar
+
+        # end of line j
+        render_str += "\n"
+
+    return render_str
 
 # assigning methods to Game obj
 me.startState = startState
