@@ -1,5 +1,5 @@
 # testing import
-print(ROOT_DIR)
+print("importing Game")
 
 # abstract class representing a game playable between n players
 class Game:
