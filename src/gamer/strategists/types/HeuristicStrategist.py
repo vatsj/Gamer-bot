@@ -1,15 +1,15 @@
 from .Strategist import Strategist
 
+# for simulated annealing to determine tempered move
+import numpy as np
+from scipy.special import softmax
+
+# for cloning gameStates to choose next move
+import copy
+
 # uses a heuristic fn h: gameState --> Pr(win) to determine move
 # trainingParams are precisely params of h
 class HeuristicStrategist(Strategist):
-
-    # for simulated annealing to determine tempered move
-    import numpy as np
-    from scipy.special import softmax
-
-    # for cloning gameStates to choose next move
-    import copy
 
     # takes in complete information about the finite game
     def __init__(self, game, turnNum, **kwargs):
@@ -18,7 +18,7 @@ class HeuristicStrategist(Strategist):
         self.turnNum = turnNum
 
         # trainingParams = heuristicParams
-        self.trainingParams = self.getInitial_hParams(self)
+        self.trainingParams = self.getInitial_hParams()
 
         # unpacks kwargs
         kwargs_default = {
@@ -94,12 +94,12 @@ class HeuristicStrategist(Strategist):
         return move
 
     # optimizes for trainingParams given the inputted resource allotment
-    def train(iters = 10**5):
+    def train(self, iters = 10**5):
         # can probably implement this in terms of a heuristic updater method?
         game = self.game
 
         # breaks down training into epochs
-        EPOCH_SIZE = np.power(iters, 2/3)
+        EPOCH_SIZE = int(np.power(iters, 2/3))
         nEpochs = iters // EPOCH_SIZE
 
         # want 1-0 to be a substantial part of training time
@@ -108,14 +108,14 @@ class HeuristicStrategist(Strategist):
 
         for epoch in range(nEpochs):
             temp = INITIAL_TEMP * (1 - epoch / nEpochs)
-            hParam_updater = self.getInitial_hP_updater(self)
+            hParam_updater = self.getInitial_hP_updater()
 
             for game_count in range(EPOCH_SIZE):
 
                 # plays a training game against itself by default
                 players = []
                 for i in range(game.nPlayers):
-                    currPlayer = self.getTrainerPlayer[i](game, i + 1)
+                    currPlayer = self.getTrainerPlayer(i + 1)
 
                     # specific properties of TrainerPlayer-s
                     currPlayer.temp = temp

@@ -13,7 +13,7 @@ class Strategist:
         self.trainingParams = None
 
     # optimizes for trainingParams given the inputted resource allotment
-    def train(iters):
+    def train(self, iters):
         """instance-specific method"""
         pass
 

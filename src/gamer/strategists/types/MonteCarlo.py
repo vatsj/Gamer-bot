@@ -1,11 +1,13 @@
 from .HeuristicStrategist import HeuristicStrategist
 
+# for win/loss dictionary
+from collections import defaultdict
+
 # uses a heuristic fn h: gameState --> Pr(win) to determine move
 # trainingParams are precisely params of h
 class MonteCarlo(HeuristicStrategist):
 
-    # for win/loss dictionary
-    from collections import defaultdict
+
 
     # hParam: keeps track of games won/lost from the posn
     # hParams: (gameState, turnNum) --> [Pr(player i wins)]
@@ -78,7 +80,7 @@ class MonteCarlo(HeuristicStrategist):
     # overrides method to add movesList obj
     def getTrainerPlayer(self, turnNum):
 
-        TP = super().getTrainerPlayer(self, turnNum)
+        TP = super().getTrainerPlayer(turnNum)
 
         # attaches position list used by observation fns
         # eventually added to hParam_updater
