@@ -3,7 +3,7 @@
 class Strategist:
 
     # takes in complete information about the finite game
-    def __init__(self, game, turnNum)
+    def __init__(self, game, turnNum):
 
         self.game = game
         self.turnNum = turnNum
@@ -20,7 +20,8 @@ class Strategist:
     # the TrainerPlayer can (indirectly) update trainingParams
     def getTrainerPlayer(self):
 
-        TP = Player(self.game, self.turnNum)
+        # ObserverPlayeris has strategist set to self (this class instance)
+        TP = ObserverPlayer(self.game, self.turnNum, self)
 
         def makeMove(TP_self, gameState):
             return getTrainerMove(self, TP_self, gameState, self.trainingParams)
