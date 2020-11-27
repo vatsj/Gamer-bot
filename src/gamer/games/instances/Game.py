@@ -7,17 +7,30 @@ class Game:
 
 
     # plays an instance of the game, returns winner
-    def play(self, players, render = False):
+    # kwargs: render, training
+    def play(self, players, **kwargs):
 
-        # constructs turnOrder queue
-        # turnOrder = queue.Queue(self.nPlayers)
-        # for player in players:
-        #     turnOrder.put(player)
+        # unpacks kwargs
+        kwargs_default = {
+            "render": False,
+            "training": False,
+        }
+
+        # fills in missing kwargs with default values
+        for kw in kwargs_default.keys():
+            if not (kw in kwargs.keys()):
+                kwargs[kw] = kwargs_default[kw]
+
+        # testing
+        render = kwargs["render"]
+        training = kwargs["training"]
+
 
         gameState = self.startState(self)
 
         turnNum = 0
-        while(True):
+        winner = None
+        while not(winner):
 
             # [1, 2, ... n] mod n
             turnNum = (turnNum % self.nPlayers) + 1
@@ -41,27 +54,47 @@ class Game:
                     print("Player ", turnNum, " has no valid moves!")
                     print("Thus, player ", winner, " is declared the winner.")
 
-                return winner
-
-            # player whose turn it is makes move
-            move = turnPlayer.makeMove(gameState)
-            if move in self.getLegalMoves(self, gameState, turnNum):
-                self.applyMove(self, gameState, turnNum, move)
+            # else, plays next move
             else:
-                raise Exception("Illegal move!")
 
-            if render:
-                print("Player ", turnNum, "makes the following move: \t", move)
+                # player whose turn it is makes move
+                move = turnPlayer.makeMove(gameState)
 
-            if (self.checkWin(self, gameState, turnNum)):
-                winner = turnNum
+                # checks if move is legal
+                if not(move in self.getLegalMoves(self, gameState, turnNum)):
+                    raise Exception("Illegal move!")
+
+                # all ObserverPlayers observe move as it is made
+                if training:
+                    # each ObserverPlayer observes move
+                    for op in players:
+                        if hasattr(op, "strategist"):
+                            op.strategist.observeTrainerMove(op, gameState, turnNum, move)
+
+                # applies move to gameState
+                self.applyMove(self, gameState, turnNum, move)
 
                 if render:
-                    print("Player ", winner, "has won!")
-                    print("The winning board state is below: \n")
-                    print(self.render_gameState(self, gameState))
+                    print("Player ", turnNum, "makes the following move: \t", move)
 
-                return winner
+                if (self.checkWin(self, gameState, turnNum)):
+                    winner = turnNum
+                    print("The resulting position is won by player ", turnNum)
+
+        # game ended; display and return winner
+        if render:
+            print("\nPlayer ", winner, "has won!")
+            print("The winning board state is below: \n")
+            print(self.render_gameState(self, gameState))
+
+        # all ObserverPlayers observe game being won
+        if training:
+            # each ObserverPlayer observes move
+            for op in players:
+                if hasattr(op, "strategist"):
+                    op.strategist.observeTrainerResult(op, gameState, winner)
+
+        return winner
 
     # vars in order of scale
     # gameState, turnNum, move
@@ -91,7 +124,6 @@ class Game:
         """instance-specific method"""
         # returns default value of player 1
         return 1
-
 
     # graphics-rendering fns
 

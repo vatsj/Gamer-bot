@@ -13,4 +13,4 @@ for i in range(nGames):
     print(game.play(players))
 
 # render a game
-game.play(players, True)
+game.play(players, render=True, training=True)

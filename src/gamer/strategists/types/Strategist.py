@@ -20,13 +20,22 @@ class Strategist:
     # the TrainerPlayer can (indirectly) update trainingParams
     def getTrainerPlayer(self):
 
-        # returns ObserverPlayer with this instance as strategist 
-        TP = ObserverPlayer(self.game, self.turnNum, self)
+        TP = Player(self.game, self.turnNum)
+
+        def makeMove(TP_self, gameState):
+            return getTrainerMove(self, TP_self, gameState, self.trainingParams)
+
+        TP.makeMove = makeMove
         return TP
+
+    # produces moves for TrainerPlayers based on player and trainingParams
+    def getTrainerMove(self, tp, gameState, trainingParams):
+        """instance-specific method"""
+        pass
 
     # canonical methods for TrainerPlayer observing move, result
     # can store information through access to player
-    def observeTrainerMove(self, player, turnNum, gameState, move):
+    def observeTrainerMove(self, player, gameState, turnNum, move):
         """instance-specific method"""
         pass
 
