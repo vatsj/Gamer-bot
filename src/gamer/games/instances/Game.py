@@ -79,7 +79,9 @@ class Game:
 
                 if (self.checkWin(self, gameState, turnNum)):
                     winner = turnNum
-                    print("The resulting position is won by player ", turnNum)
+
+                    if render:
+                        print("The resulting position is won by player ", turnNum)
 
         # game ended; display and return winner
         if render:
