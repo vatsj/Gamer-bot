@@ -3,25 +3,26 @@
 class Strategist:
 
     # takes in complete information about the finite game
-    def __init__(self, game, turnNum):
+    def __init__(self, game):
 
+        # independent of turnNum
+        # "knows how to play both sides of chess"
         self.game = game
-        self.turnNum = turnNum
 
         # trainingParams stores all trained information of the model
         self.trainingParams = None
 
     # optimizes for trainingParams given the inputted resource allotment
-    def train(iters = 10**4):
+    def train(iters):
         """instance-specific method"""
         pass
 
     # produces an ObserverPlayer capable of playing games
     # the TrainerPlayer can (indirectly) update trainingParams
-    def getTrainerPlayer(self):
+    def getTrainerPlayer(self, turnNum):
 
         # ObserverPlayeris has strategist set to self (this class instance)
-        TP = ObserverPlayer(self.game, self.turnNum, self)
+        TP = ObserverPlayer(self.game, turnNum, self)
 
         def makeMove(TP_self, gameState):
             return getTrainerMove(self, TP_self, gameState, self.trainingParams)

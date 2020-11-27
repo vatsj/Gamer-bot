@@ -46,7 +46,7 @@ def compete_player(game, player_types, nGames = 100):
 # strategist_types: array of types ((sub)classes) of strategist
 def compete_strategist(game, strategist_types, nGames = 100):
 
-    TRAINING_TIME = 10**4
+    TRAINING_TIME = 10**5
 
     # instantiates from strategist_types
     # strategists = []
@@ -56,9 +56,16 @@ def compete_strategist(game, strategist_types, nGames = 100):
     strategists = pt2p(game, strategist_types)
 
     # generates optimal players from strategists
-    players = [s.getOptimalPlayer() for s in strategists]
+    players = []
+    for s in strategists:
+        s.train(TRAINING_TIME)
+        players.append(s.getOptimalPlayer())
 
-    return compete(game, players, nGames)
+    # visualize a single game
+    game.play(players, render = True)
+
+    results = compete(game, players, nGames)
+    return results
 
 # plays a single game with board posns rendered
 def visualize(game, player_types):

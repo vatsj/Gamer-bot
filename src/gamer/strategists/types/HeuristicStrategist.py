@@ -1,4 +1,4 @@
-from Strategist import Strategist
+from .Strategist import Strategist
 
 # uses a heuristic fn h: gameState --> Pr(win) to determine move
 # trainingParams are precisely params of h
@@ -46,7 +46,7 @@ class HeuristicStrategist(Strategist):
         pass
 
     # heuristic function for Pr(win)
-    # h: gameState, heuristicParams --> Pr(win)
+    # h: gameState, heuristicParams --> [Pr(player i wins)]
     def h(self, gameState, turnNum, heuristicParams):
         """instance-specific method"""
         pass
@@ -58,17 +58,19 @@ class HeuristicStrategist(Strategist):
 
     # makeMove() helper fn
     # determines move based on simulated annealing with respect to heuristic fn
+    # returns optimal move for player turnNum give gameState
     def makeTemperedMove(gameState, turnNum, hParams, temp):
 
         game = self.game
         allMoves = game.getLegalMoves(game, gameState, turnNum)
+        nextTurnNum = game.nextTurn(game)
 
         # determines heuristic scores of each available move
         move_hScores = []
         for move in allMoves:
             resulting_gameState = copy.copy(gameState)
             game.applyMove(game, resulting_gameState, turnNum, move)
-            curr_hScore = self.h_wrapper(self, resulting_gameState, turnNum, hP)
+            curr_hScore = self.h_wrapper(self, resulting_gameState, nextTurnNum, hP)[turnNum - 1]
 
             move_hScores.append(curr_hScore)
 

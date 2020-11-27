@@ -33,7 +33,7 @@ class Game:
         while not(winner):
 
             # [1, 2, ... n] mod n
-            turnNum = (turnNum % self.nPlayers) + 1
+            turnNum = self.nextTurn(turnNum)
 
             # gets player taking current turn
             turnPlayer = players[turnNum - 1]
@@ -105,6 +105,9 @@ class Game:
     def startState(self):
         """instance-specific method"""
         pass
+
+    def nextTurn(self, turnNum):
+        return (turnNum % self.nPlayers) + 1
 
     # returns iterable of legal moves by given player in given gameState
     def getLegalMoves(self, gameState, turnNum):
