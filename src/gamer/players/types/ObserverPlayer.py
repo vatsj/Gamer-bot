@@ -11,15 +11,11 @@ class ObserverPlayer(Player):
         # adds parent strategist as object property
         self.strategist = strategist
 
-    def makeMove(self, gameState):
-        """instance-specific method"""
-        pass
-
-
-    def observeMove(self, turnNum, gameState, move):
-        """instance-specific method"""
-        pass
-
-    def observeResult(self, gameState, winner):
-        """instance-specific method"""
-        pass
+    # methods handled directly by the strategist
+    # def observeMove(self, turnNum, gameState, move):
+    #     """instance-specific method"""
+    #     pass
+    #
+    # def observeResult(self, gameState, winner):
+    #     """instance-specific method"""
+    #     pass
