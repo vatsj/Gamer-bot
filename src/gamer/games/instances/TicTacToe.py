@@ -47,7 +47,7 @@ def applyMove(self, gameState, turnNum, move):
     setSquare(gameState, move, turnNum)
 
 # checks if current player has any possible 3 in a row
-def checkWin(self, gameState, turnNum):
+def checkWin(self, gameState):
 
     winning_sets = []
 
@@ -83,15 +83,19 @@ def checkWin(self, gameState, turnNum):
 
     # checks if turnNum player has any winning sets
     for ws in winning_sets:
-        hasAll = True
+        hasAll = [True for i in range(self.nPlayers)]
 
         for square in ws:
-            if (getSquare(gameState, square) != turnNum):
-                hasAll  = False
+            sqVal = getSquare(gameState, square)
 
-        # if player has all of the winning set, they win
-        if hasAll:
-            return True
+            for player_index in range(self.nPlayers):
+                if not(player_index + 1 == sqVal):
+                    hasAll[player_index] = False
+
+        # check if any player has all of the given set
+        for player_index in range(self.nPlayers):
+            if hasAll[player_index]:
+                return player_index + 1
 
     return False
 

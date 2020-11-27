@@ -26,6 +26,14 @@ class MonteCarlo(HeuristicStrategist):
     # looks up past Pr(win) from MC_dict
     def h(self, gameState, turnNum, heuristicParams):
 
+        # check if game has been won by any player
+        winner_ind = self.game.checkWin(gameState)
+        if winner_ind:
+            if (winner_ind == turnNum):
+                return 1
+            else:
+                return 0
+
         MC_dict = heuristicParams
 
         winArr = MC_dict[(gameState, turnNum)]

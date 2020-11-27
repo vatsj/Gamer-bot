@@ -4,7 +4,7 @@ from .Player import Player
 class ObserverPlayer(Player):
 
     # Player + Strategist
-    def __init__(self, game, turnNum, strategist):
+    def __init__(self, game, turnNum, strategist = None):
 
         super().__init__(game, turnNum)
 

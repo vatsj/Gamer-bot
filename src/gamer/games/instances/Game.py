@@ -77,9 +77,9 @@ class Game:
                 if render:
                     print("Player ", turnNum, "makes the following move: \t", move)
 
-                if (self.checkWin(self, gameState, turnNum)):
-                    winner = turnNum
+                winner = self.checkWin(self, gameState)
 
+                if winner:
                     if render:
                         print("The resulting position is won by player ", turnNum)
 
@@ -119,8 +119,9 @@ class Game:
     def applyMove(self, gameState, turnNum, move):
         pass
 
-    # checks if the player that just moved won the game
-    def checkWin(self, gameState, turnNum):
+    # checks if any player has won
+    # returns False if not
+    def checkWin(self, gameState):
         """instance-specific method"""
         pass
 

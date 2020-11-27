@@ -23,7 +23,7 @@ def getLegalMoves(self, gameState, turnNum):
 def applyMove(self, gameState, turnNum, move):
     pass
 
-def checkWin(self, gameState, turnNum):
+def checkWin(self, gameState):
     """instance-specific method"""
     pass
 
