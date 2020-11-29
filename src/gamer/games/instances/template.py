@@ -33,9 +33,14 @@ def winsStalemate(self, gameState, turnNum):
     # returns default value of player 1
     return 1
 
+def encode_posn(self, gameState, turnNum):
+    """instance-specific method"""
+    pass
+
 me.startState = startState
 me.getLegalMoves = getLegalMoves
 me.applyMove = applyMove
 me.checkWin = checkWin
 me.winsStalemate = winsStalemate
 me.render_gameState = render_gameState
+me.encode_posn = encode_posn

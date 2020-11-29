@@ -46,6 +46,7 @@ def compete_player(game, player_types, nGames = 100):
 # strategist_types: array of types ((sub)classes) of strategist
 def compete_strategist(game, strategist_types, nGames = 100):
 
+    # small training time for bug-checking
     TRAINING_TIME = 10**5
 
     # instantiates from strategist_types

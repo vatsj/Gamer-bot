@@ -1,13 +1,13 @@
 from .HeuristicStrategist import HeuristicStrategist
 
+import numpy as np
+
 # for win/loss dictionary
 from collections import defaultdict
 
 # uses a heuristic fn h: gameState --> Pr(win) to determine move
 # trainingParams are precisely params of h
 class MonteCarlo(HeuristicStrategist):
-
-
 
     # hParam: keeps track of games won/lost from the posn
     # hParams: (gameState, turnNum) --> [Pr(player i wins)]
@@ -27,25 +27,39 @@ class MonteCarlo(HeuristicStrategist):
     def h(self, gameState, turnNum, heuristicParams):
 
         # check if game has been won by any player
-        winner_ind = self.game.checkWin(gameState)
+        game = self.game
+        winner_ind = game.checkWin(game, gameState)
         if winner_ind:
-            if (winner_ind == turnNum):
-                return 1
-            else:
-                return 0
+            # player winner_ind wins with prob 1
+            winProbs = np.zeros(game.nPlayers)
+            winProbs[winner_ind - 1] = 1
+            return winProbs
 
+        # finds MC info based on encoded posn
         MC_dict = heuristicParams
+        posn = game.encode_posn(game, gameState, turnNum)
 
-        winArr = MC_dict[(gameState, turnNum)]
+        winArr = MC_dict[posn]
+
+        ones = np.ones(game.nPlayers)
         # adds laplace smoothing as a Beta(1, 1) (uniform) prior
-        nWins =  winArr[turnNum - 1] + 1
+        winArr_smoothed = winArr + ones
 
-        ones = np.ones(self.game.nPlayers)
-        nTotal = ones.dot(winArr + ones)
+        # # monte-carlo probability of winning, with Laplace smoothing
+        winProbs = winArr_smoothed / (ones.dot(winArr_smoothed))
 
-        # monte-carlo probability of winning, with Laplace smoothing
-        PrWin = nWins / nTotal
-        return PrWin
+        # print(winProbs)
+        return winProbs
+
+        # adds laplace smoothing as a Beta(1, 1) (uniform) prior
+        # nWins =  winArr[turnNum - 1] + 1
+        #
+        # ones = np.ones(self.game.nPlayers)
+        # nTotal = ones.dot(winArr + ones)
+        #
+        # # monte-carlo probability of winning, with Laplace smoothing
+        # PrWin = nWins / nTotal
+        # return PrWin
 
     # updates hParams based on training games
     # update info is stored in hParam_updater obj
@@ -58,7 +72,7 @@ class MonteCarlo(HeuristicStrategist):
 
         old_keys = old_hParams.keys()
         new_keys = hParam_updater.keys()
-        all_keys = old_keys + new_keys
+        all_keys = {*old_keys, *new_keys}
         if len(all_keys) > MAX_SIZE:
             pruning = True
         else:
@@ -68,22 +82,27 @@ class MonteCarlo(HeuristicStrategist):
 
         # re-adds keys to new hParams
         for key in all_keys:
-            winArr = DSICOUNT_FACTOR * old_keys[key] + new_keys[key]
+            winArr = DISCOUNT_FACTOR * old_hParams[key] + hParam_updater[key]
 
             addKey = True
 
             # randomly choosing whether to record winArr
             if pruning:
+                # "magnitude of wins vector"
                 # weights consistent wins/losses above mixed
-                significance = winArr.dot(winArr)
+                significance = np.power(winArr.dot(winArr), 1/2)
 
-                # proportional to p(deletion) = 1/n^2
-                # deletes significance = 1 keys with Pr = 1
+                # proportional to p(deletion) = 1/n
+                # deletes significance = 1 keys immediately with Pr = 1
+                # eventually deletes every key with Pr = 1
                 if (np.random.rand() < 1 / significance):
                     addKey = False
 
             if addKey:
                 new_hParams[key] = winArr
+
+        # updates hParams value
+        self.trainingParams = new_hParams
 
     # overrides method to add movesList obj
     def getTrainerPlayer(self, turnNum):
@@ -92,15 +111,18 @@ class MonteCarlo(HeuristicStrategist):
 
         # attaches position list used by observation fns
         # eventually added to hParam_updater
-        TP.positionSet = {}
+        TP.positionSet = set()
+
+        return TP
 
     # canonical methods for TrainerPlayer observing move, result
     # can store information through access to player
     def observeTrainerMove(self, player, gameState, turnNum, move):
 
         # adds position to list
-        key = (gameState, turnNum)
-        player.positionSet += key
+        game = self.game
+        posn = game.encode_posn(game, gameState, turnNum)
+        player.positionSet.add(posn)
 
     # adds list to hParam_updater
     def observeTrainerResult(self, player, gameState, winner):
@@ -109,5 +131,6 @@ class MonteCarlo(HeuristicStrategist):
         hParam_updater = player.hParam_updater
 
         # records that each position was won by wniner
-        for key in toRecord:
-            hParam_updater[key][winner - 1] += 1
+        for posn in toRecord:
+            posn_results = hParam_updater[posn]
+            posn_results[winner - 1] += 1

@@ -5,7 +5,7 @@ import compete
 # defines classes/objects for game/player
 game = gamer.games.instances.T3
 playerType = gamer.players.types.RandomPlayer
-ObserverPlayer = gamer.players.types.RandomPlayer
+ObserverPlayer = gamer.players.types.ObserverPlayer
 strategistType = gamer.strategists.types.MonteCarlo
 strategistType.ObserverPlayer = ObserverPlayer
 
@@ -18,4 +18,4 @@ results = compete.compete_strategist(game, s_types)
 print(results)
 
 # render a game
-compete.visualize(game, player_types)
+# compete.visualize(game, player_types)

@@ -29,7 +29,7 @@ class Strategist:
         TP = self.ObserverPlayer(self.game, turnNum, self)
 
         def makeMove(TP_self, gameState):
-            return getTrainerMove(self, TP_self, gameState, self.trainingParams)
+            return self.getTrainerMove(TP_self, gameState, self.trainingParams)
 
         TP.makeMove = makeMove
         return TP
@@ -56,7 +56,7 @@ class Strategist:
         OP = self.ObserverPlayer(self.game, self.turnNum)
 
         def makeMove(OP_self, gameState):
-            return getOptimalMove(self, gameState, self.trainingParams)
+            return self.getOptimalMove(gameState, self.trainingParams)
 
         OP.makeMove = makeMove
         return OP

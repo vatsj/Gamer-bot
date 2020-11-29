@@ -58,7 +58,7 @@ class Game:
             else:
 
                 # player whose turn it is makes move
-                move = turnPlayer.makeMove(gameState)
+                move = turnPlayer.makeMove(turnPlayer, gameState)
 
                 # checks if move is legal
                 if not(move in self.getLegalMoves(self, gameState, turnNum)):
@@ -72,6 +72,7 @@ class Game:
                             op.strategist.observeTrainerMove(op, gameState, turnNum, move)
 
                 # applies move to gameState
+                # MODIFIES GAMESTATE IN PLACE
                 self.applyMove(self, gameState, turnNum, move)
 
                 if render:
@@ -115,7 +116,7 @@ class Game:
         pass
 
     # applies "player makes move" to game state
-    # modifies gameState as an object
+    # modifies gameState in place
     def applyMove(self, gameState, turnNum, move):
         pass
 
@@ -135,5 +136,11 @@ class Game:
 
     # renders the game board
     def render_gameState(self, gameState):
+        """instance-specific method"""
+        pass
+
+    # encodes gameState, turnNum for dictionary storage
+    # returns immutable object (dictionary-friendly)
+    def encode_posn(self, gameState, turnNum):
         """instance-specific method"""
         pass

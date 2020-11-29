@@ -11,6 +11,8 @@ me = T3
 # board size
 SIZE = 3
 
+# helper functions
+
 # returns value of the square given by coords
 def getSquare(gameState, coords):
     i, j = coords
@@ -21,6 +23,33 @@ def setSquare(gameState, coords, val):
     i, j = coords
     # print(gameState)
     gameState[i][j] = val
+
+# # construct board from list, not tuple
+# def getMutableBoard():
+#
+#     board = [[0 for j in range(SIZE)] for i in range(SIZE)]
+#     return board
+
+# turn nested list into nested tuple
+# doesn't modify inputted board state
+def tuplify(input):
+
+    # if list, proceed recursively
+    output = []
+    if isinstance(input, list):
+
+        # recursive calls
+        for elt in input:
+            output.append(tuplify(elt))
+
+        # turns main list into tuple
+        output = tuple(output)
+
+    # otherwise, return
+    else:
+        output = input
+
+    return output
 
 # returns the initial game state (upon starting a new game)
 def startState(self):
@@ -43,6 +72,20 @@ def getLegalMoves(self, gameState, turnNum):
 
 # marks off square (i, j) with number given by turnNum
 def applyMove(self, gameState, turnNum, move):
+
+    # newGameState = getMutableBoard()
+    #
+    # for i in range(SIZE):
+    #     for j in range(SIZE):
+    #         currSquare = (i, j)
+    #         currVal = getSquare(gameState, currSquare)
+    #
+    #         if (currSquare == move):
+    #             currVal = turnNum
+    #
+    #         setSquare(newGameState, currSquare, currVal)
+    #
+    # return tuplify(newGameState)
 
     setSquare(gameState, move, turnNum)
 
@@ -171,6 +214,16 @@ def render_gameState(self, gameState):
 
     return render_str
 
+# encodes (boardState, turnNum)
+def encode_posn(self, gameState, turnNum):
+
+    encoded_gameState = tuplify(gameState)
+    posn = (encoded_gameState, turnNum)
+
+    # print(gameState)
+    # print(posn)
+    return posn
+
 # assigning methods to Game obj
 me.startState = startState
 me.getLegalMoves = getLegalMoves
@@ -178,3 +231,4 @@ me.applyMove = applyMove
 me.checkWin = checkWin
 me.winsStalemate = winsStalemate
 me.render_gameState = render_gameState
+me.encode_posn = encode_posn

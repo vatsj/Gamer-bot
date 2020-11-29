@@ -51,26 +51,26 @@ class HeuristicStrategist(Strategist):
         """instance-specific method"""
         pass
 
-    def h_wapper(self, gameState, turnNum, heuristicParams):
+    def h_wrapper(self, gameState, turnNum, heuristicParams):
 
         # handle augmentations from kwargs
-        return h(self, gameState, turnNum, heuristicParams)
+        return self.h(gameState, turnNum, heuristicParams)
 
     # makeMove() helper fn
     # determines move based on simulated annealing with respect to heuristic fn
     # returns optimal move for player turnNum give gameState
-    def makeTemperedMove(gameState, turnNum, hParams, temp):
+    def makeTemperedMove(self, gameState, turnNum, hParams, temp):
 
         game = self.game
         allMoves = game.getLegalMoves(game, gameState, turnNum)
-        nextTurnNum = game.nextTurn(game)
+        nextTurnNum = game.nextTurn(turnNum)
 
         # determines heuristic scores of each available move
         move_hScores = []
         for move in allMoves:
-            resulting_gameState = copy.copy(gameState)
+            resulting_gameState = copy.deepcopy(gameState)
             game.applyMove(game, resulting_gameState, turnNum, move)
-            curr_hScore = self.h_wrapper(self, resulting_gameState, nextTurnNum, hP)[turnNum - 1]
+            curr_hScore = self.h_wrapper(resulting_gameState, nextTurnNum, hParams)[turnNum - 1]
 
             move_hScores.append(curr_hScore)
 
@@ -84,13 +84,13 @@ class HeuristicStrategist(Strategist):
             move_probs = softmax(softmax_scores)
 
             # choosing random move given move_probs
-            move = np.random.choice(allMoves, p=move_probs)
+            move_ind = np.random.choice(len(allMoves), p=move_probs)
 
         # t = 0 case reduces to argmax
         else:
             move_ind = np.argmax(hScores)
-            move = allMoves[move_ind]
 
+        move = allMoves[move_ind]
         return move
 
     # optimizes for trainingParams given the inputted resource allotment
@@ -126,7 +126,7 @@ class HeuristicStrategist(Strategist):
                 # plays game against itelf
                 game.play(players, training=True)
 
-            self.update_hParams(self, hParam_updater)
+            self.update_hParams(hParam_updater)
 
     # updates hParams based on training games
     # update info is stored in hParam_updater obj
@@ -144,27 +144,29 @@ class HeuristicStrategist(Strategist):
         move = self.makeTemperedMove(gameState, self.turnNum, hParams, temp)
         return move
 
+    # seems redundant with Strategist?
+
     # canonical methods for TrainerPlayer observing move, result
     # can store information through access to player
-    def observeTrainerMove(self, player, gameState, turnNum, move):
-        """instance-specific method"""
-        pass
-
-    def observeTrainerResult(self, player, gameState, winner):
-        """instance-specific method"""
-        pass
-
-    # produces the player using the strategist's "optimal strategy"
-    # plays in terms of getOptimalMove
-    def getOptimalPlayer(self):
-        # do we have access to Player class?
-        OP = Player(self.game, self.turnNum)
-
-        def makeMove(OP_self, gameState):
-            return getOptimalMove(self, gameState, self.trainingParams)
-
-        OP.makeMove = makeMove
-        return OP
+    # def observeTrainerMove(self, player, gameState, turnNum, move):
+    #     """instance-specific method"""
+    #     pass
+    #
+    # def observeTrainerResult(self, player, gameState, winner):
+    #     """instance-specific method"""
+    #     pass
+    #
+    # # produces the player using the strategist's "optimal strategy"
+    # # plays in terms of getOptimalMove
+    # def getOptimalPlayer(self):
+    #     # do we have access to Player class?
+    #     OP = ObserverPlayer(self.game, self.turnNum)
+    #
+    #     def makeMove(OP_self, gameState):
+    #         return getOptimalMove(self, gameState, self.trainingParams)
+    #
+    #     OP.makeMove = makeMove
+    #     return OP
 
     # produces optimal move for a given gameState
     # only a function of gameState, trainingParams
