@@ -58,7 +58,9 @@ class Game:
             else:
 
                 # player whose turn it is makes move
-                move = turnPlayer.makeMove(turnPlayer, gameState)
+                # print(turnPlayer)
+                move = turnPlayer.makeMove(gameState)
+                # move = turnPlayer.makeMove(turnPlayer, gameState)
 
                 # checks if move is legal
                 if not(move in self.getLegalMoves(self, gameState, turnNum)):

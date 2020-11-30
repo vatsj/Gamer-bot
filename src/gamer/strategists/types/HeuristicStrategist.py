@@ -12,10 +12,9 @@ import copy
 class HeuristicStrategist(Strategist):
 
     # takes in complete information about the finite game
-    def __init__(self, game, turnNum, **kwargs):
+    def __init__(self, game, **kwargs):
 
-        self.game = game
-        self.turnNum = turnNum
+        super().__init__(game)
 
         # trainingParams = heuristicParams
         self.trainingParams = self.getInitial_hParams()
@@ -33,7 +32,8 @@ class HeuristicStrategist(Strategist):
             if not (kw in kwargs.keys()):
                 kwargs[kw] = kwargs_default[kw]
 
-        self.kwargs = kwargs
+        # stores modifiers for computing h_wrapper in terms of h
+        self.modifiers = kwargs
 
     # returns an initial value for hParams
     def getInitial_hParams(self):
@@ -59,7 +59,7 @@ class HeuristicStrategist(Strategist):
     # makeMove() helper fn
     # determines move based on simulated annealing with respect to heuristic fn
     # returns optimal move for player turnNum give gameState
-    def makeTemperedMove(self, gameState, turnNum, hParams, temp):
+    def makeTemperedMove(self, gameState, turnNum, hParams, temp, render = False):
 
         game = self.game
         allMoves = game.getLegalMoves(game, gameState, turnNum)
@@ -75,6 +75,10 @@ class HeuristicStrategist(Strategist):
             move_hScores.append(curr_hScore)
 
         hScores = np.array(move_hScores)
+
+        # renders information about available moves
+        if render:
+            print("\nheuristic scores: \t", hScores)
 
         # determines move probabilities from hScores
         # see link below for technical details:
@@ -140,7 +144,7 @@ class HeuristicStrategist(Strategist):
                 print("Training progress: \t", epoch / nEpochs)
                 print("sample game below: \n")
 
-                players = [self.getOptimalPlayer() for i in range(game.nPlayers)]
+                players = [self.getOptimalPlayer(i + 1) for i in range(game.nPlayers)]
                 game.play(players, render=True)
 
     # updates hParams based on training games
@@ -150,43 +154,19 @@ class HeuristicStrategist(Strategist):
         pass
 
     # produces moves for TrainerPlayers based on player and trainingParams
-    def getTrainerMove(self, tp, gameState, trainingParams):
+    def getTrainerMove(self, tp, gameState, turnNum, trainingParams):
 
         # tempered move with temp given by player
         temp = tp.temp
         hParams = trainingParams
 
-        move = self.makeTemperedMove(gameState, self.turnNum, hParams, temp)
+        move = self.makeTemperedMove(gameState, turnNum, hParams, temp)
         return move
-
-    # seems redundant with Strategist?
-
-    # canonical methods for TrainerPlayer observing move, result
-    # can store information through access to player
-    # def observeTrainerMove(self, player, gameState, turnNum, move):
-    #     """instance-specific method"""
-    #     pass
-    #
-    # def observeTrainerResult(self, player, gameState, winner):
-    #     """instance-specific method"""
-    #     pass
-    #
-    # # produces the player using the strategist's "optimal strategy"
-    # # plays in terms of getOptimalMove
-    # def getOptimalPlayer(self):
-    #     # do we have access to Player class?
-    #     OP = ObserverPlayer(self.game, self.turnNum)
-    #
-    #     def makeMove(OP_self, gameState):
-    #         return getOptimalMove(self, gameState, self.trainingParams)
-    #
-    #     OP.makeMove = makeMove
-    #     return OP
 
     # produces optimal move for a given gameState
     # only a function of gameState, trainingParams
-    def getOptimalMove(self, gameState, trainingParams):
+    def getOptimalMove(self, gameState, turnNum, trainingParams):
 
         # tempered move with temp = 0
-        move = self.makeTemperedMove(gameState, self.turnNum, trainingParams, 0)
+        move = self.makeTemperedMove(gameState, turnNum, trainingParams, 0, self.render)
         return move

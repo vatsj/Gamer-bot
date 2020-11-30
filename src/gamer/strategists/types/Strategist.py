@@ -16,6 +16,9 @@ class Strategist:
         # trainingParams stores all trained information of the model
         self.trainingParams = None
 
+        # flag for rendering info about move choice
+        self.render = False
+
     # optimizes for trainingParams given the inputted resource allotment
     def train(self, iters):
         """instance-specific method"""
@@ -28,14 +31,14 @@ class Strategist:
         # ObserverPlayeris has strategist set to self (this class instance)
         TP = self.ObserverPlayer(self.game, turnNum, self)
 
-        def makeMove(TP_self, gameState):
-            return self.getTrainerMove(TP_self, gameState, self.trainingParams)
+        def makeMove(gameState):
+            return self.getTrainerMove(TP, gameState, turnNum, self.trainingParams)
 
         TP.makeMove = makeMove
         return TP
 
     # produces moves for TrainerPlayers based on player and trainingParams
-    def getTrainerMove(self, tp, gameState, trainingParams):
+    def getTrainerMove(self, tp, gameState, turnNum, trainingParams):
         """instance-specific method"""
         pass
 
@@ -51,18 +54,18 @@ class Strategist:
 
     # produces the player using the strategist's "optimal strategy"
     # plays in terms of getOptimalMove
-    def getOptimalPlayer(self):
+    def getOptimalPlayer(self, turnNum):
         # only have access to ObserverPlayer class
-        OP = self.ObserverPlayer(self.game, self.turnNum)
+        OP = self.ObserverPlayer(self.game, turnNum)
 
-        def makeMove(OP_self, gameState):
-            return self.getOptimalMove(gameState, self.trainingParams)
+        def makeMove(gameState):
+            return self.getOptimalMove(gameState, turnNum, self.trainingParams)
 
         OP.makeMove = makeMove
         return OP
 
     # produces optimal move for a given gameState
     # only a function of gameState, trainingParams
-    def getOptimalMove(self, gameState, trainingParams):
+    def getOptimalMove(self, gameState, turnNum, trainingParams):
         """instance-specific method"""
         pass

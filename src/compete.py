@@ -8,6 +8,17 @@ used through main.py to test players/strategists
 """
 
 from collections import defaultdict
+import random
+
+# helper function to convert between
+# player_types --> players
+def pt2p(game, player_types):
+    # instantiates players from player_types
+    players = []
+    for i in range(game.nPlayers):
+        players.append(player_types[i](game, i + 1))
+
+    return players
 
 # players play game
 # helper method for other compete fns
@@ -25,15 +36,11 @@ def compete(game, players, nGames):
 
     return results_dict
 
-# helper function to convert between
-# player_types --> players
-def pt2p(game, player_types):
-    # instantiates players from player_types
-    players = []
-    for i in range(game.nPlayers):
-        players.append(player_types[i](game, i + 1))
+# plays a single game with board posns rendered
+def visualize(game, player_types):
 
-    return players
+    players = pt2p(game, player_types)
+    game.play(players, render = True)
 
 # player_types: array of player-type
 # ex: [randomPlayer, randomPlayer]
@@ -68,21 +75,28 @@ def compete_strategist(game, strategist_types, nGames = 100):
     results = compete(game, players, nGames)
     return results
 
-# plays a single game with board posns rendered
-def visualize(game, player_types):
+def analyze_strategist(game, strategist, InputPlayer):
+    # small training time for bug-checking
+    TRAINING_TIME = 10**3
+    strategist.train(TRAINING_TIME)
 
-    # let fn accept different kinds of types for players arr?
+    play = input("Would you like to play against the trained strategist? ([y]/n)")
+    if not(play.lower() == "n"):
 
-    # instantiates players from player_types
-    # players = []
-    # for i in range(game.nPlayers):
-    #     player_def = player_defs[i]
-    #
-    #     if hasattr(player_def, "makeMove"):
-    #         players.append(player_def)
-    #     players.append(player_types[i](game, i + 1))
-    #
-    # return compete(game, players, nGames)
+        # constructs players in random order
+        players = []
+        order = [i for i in range(game.nPlayers)]
+        random.shuffle(order)
+        for i in range(game.nPlayers):
+            if order[i] == 0:
+                players.append(InputPlayer(game, i + 1))
+            else:
+                curr_OP = strategist.getOptimalPlayer(i + 1)
+                # signals the player to render info about chosen moves
+                curr_OP.render = True
+                players.append(curr_OP)
 
-    players = pt2p(game, player_types)
-    game.play(players, render = True)
+        # plays game, prompts to play again
+        game.play(players, render=True)
+
+        play = input("Play again? ([y]/n)")

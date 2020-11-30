@@ -49,7 +49,7 @@ class MonteCarlo(HeuristicStrategist):
         # # monte-carlo probability of winning, with Laplace smoothing
         winProbs = winArr_smoothed / (ones.dot(winArr_smoothed))
 
-        print(winProbs)
+        # print(winProbs)
         return winProbs
 
     # updates hParams based on training games
