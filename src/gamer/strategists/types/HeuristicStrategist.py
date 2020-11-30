@@ -78,7 +78,12 @@ class HeuristicStrategist(Strategist):
 
         # renders information about available moves
         if render:
-            print("\nheuristic scores: \t", hScores)
+            hScores_render = []
+            for hS in hScores:
+                hScores_render.append(int(10*hS))
+
+            print("\nheuristic scores:")
+            print(game.render_gameBoard(game, gameState, hScores_render))
 
         # determines move probabilities from hScores
         # see link below for technical details:

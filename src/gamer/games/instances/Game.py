@@ -141,6 +141,11 @@ class Game:
         """instance-specific method"""
         pass
 
+    # renders the game board filled with arbitrary info
+    def render_gameBoard(self, gameState, info):
+        """instance-specific method"""
+        pass
+
     # encodes gameState, turnNum for dictionary storage
     # returns immutable object (dictionary-friendly)
     def encode_posn(self, gameState, turnNum):

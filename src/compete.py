@@ -79,9 +79,10 @@ def analyze_strategist(game, strategist, InputPlayer):
     # small training time for bug-checking
     TRAINING_TIME = 10**3
     strategist.train(TRAINING_TIME)
+    strategist.render = True
 
     play = input("Would you like to play against the trained strategist? ([y]/n)")
-    if not(play.lower() == "n"):
+    while not(play.lower() == "n"):
 
         # constructs players in random order
         players = []
@@ -93,7 +94,7 @@ def analyze_strategist(game, strategist, InputPlayer):
             else:
                 curr_OP = strategist.getOptimalPlayer(i + 1)
                 # signals the player to render info about chosen moves
-                curr_OP.render = True
+                # curr_OP.render = True
                 players.append(curr_OP)
 
         # plays game, prompts to play again

@@ -7,6 +7,9 @@ class Player:
         self.game = game
         self.turnNum = turnNum
 
+        # flag for rendering move info
+        # self.render = False
+
     # returns the move to be made
     # must be an element of self.game.getLegalMoves()
     def makeMove(self, gameState):

@@ -214,6 +214,81 @@ def render_gameState(self, gameState):
 
     return render_str
 
+# renders the game board filled with arbitrary info
+# only handles info = [single-char array]
+def render_gameBoard(self, gameState, info):
+
+    # first renders in terms of a 2d array
+    SQUARE_SIZE = 3
+    square_center = (SQUARE_SIZE - 1) / 2
+
+    arr_size = SIZE*(SQUARE_SIZE + 1) - 1
+    render_arr = [[' ' for j in range(arr_size)] for i in range(arr_size)]
+
+    square_chars = {
+        0: ' ',
+        1: 'X',
+        2: 'O'
+    }
+    rowcol_chars = {
+        (False, False): None,
+        (True, False): '-',
+        (False, True): '|',
+        (True, True): '+',
+    }
+
+    # keeps track of current elt of info
+    info_index = 0
+
+    # fills in render_arr
+    for i in range(arr_size):
+        for j in range(arr_size):
+            # character to be added to render_arr
+            currChar = ' '
+
+            # location mod the relevant square
+            row_index = i % (SQUARE_SIZE + 1)
+            column_index = j % (SQUARE_SIZE + 1)
+
+            # fills in center of squares
+            if (row_index == square_center and column_index == square_center):
+                square_i = (i - row_index) // (SQUARE_SIZE + 1)
+                square_j = (j - column_index) // (SQUARE_SIZE + 1)
+                square_coords = (square_i, square_j)
+
+                currVal = getSquare(gameState, square_coords)
+                if currVal != 0:
+                    currChar = square_chars[currVal]
+                else:
+                    currChar = str(info[info_index])
+                    info_index += 1
+
+            # fills in rows/columns
+
+            # indicator variables for rows/columns
+            row_ind = (row_index == SQUARE_SIZE)
+            col_ind = (column_index == SQUARE_SIZE)
+            rowcol_ind = (row_ind, col_ind)
+
+            rowcol_char = rowcol_chars[rowcol_ind]
+            if (rowcol_char):
+                currChar = rowcol_char
+
+            # add currChar to array
+            render_arr[i][j] += currChar
+
+    # converts render_arr to string
+    render_str = ""
+    for i in range(arr_size):
+        for j in range(arr_size):
+            currChar = render_arr[i][j]
+            render_str += currChar
+
+        # end of line j
+        render_str += "\n"
+
+    return render_str
+
 # encodes (boardState, turnNum)
 def encode_posn(self, gameState, turnNum):
 
@@ -231,4 +306,5 @@ me.applyMove = applyMove
 me.checkWin = checkWin
 me.winsStalemate = winsStalemate
 me.render_gameState = render_gameState
+me.render_gameBoard = render_gameBoard
 me.encode_posn = encode_posn
