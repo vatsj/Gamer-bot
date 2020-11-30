@@ -26,8 +26,9 @@ class MonteCarlo(HeuristicStrategist):
     # looks up past Pr(win) from MC_dict
     def h(self, gameState, turnNum, heuristicParams):
 
-        # check if game has been won by any player
         game = self.game
+
+        # check if game has been won by any player
         winner_ind = game.checkWin(game, gameState)
         if winner_ind:
             # player winner_ind wins with prob 1
@@ -48,25 +49,18 @@ class MonteCarlo(HeuristicStrategist):
         # # monte-carlo probability of winning, with Laplace smoothing
         winProbs = winArr_smoothed / (ones.dot(winArr_smoothed))
 
-        # print(winProbs)
+        print(winProbs)
         return winProbs
-
-        # adds laplace smoothing as a Beta(1, 1) (uniform) prior
-        # nWins =  winArr[turnNum - 1] + 1
-        #
-        # ones = np.ones(self.game.nPlayers)
-        # nTotal = ones.dot(winArr + ones)
-        #
-        # # monte-carlo probability of winning, with Laplace smoothing
-        # PrWin = nWins / nTotal
-        # return PrWin
 
     # updates hParams based on training games
     # update info is stored in hParam_updater obj
     def update_hParams(self, hParam_updater):
 
         DISCOUNT_FACTOR = 1/2
+
         MAX_SIZE = 10**6
+        # significance += 1 --> Pr(deletion) *= D_R
+        DELETION_RATIO = 1/2
 
         old_hParams = self.trainingParams
 
@@ -82,6 +76,7 @@ class MonteCarlo(HeuristicStrategist):
 
         # re-adds keys to new hParams
         for key in all_keys:
+            # winArr magnitude is bounded due to discounting
             winArr = DISCOUNT_FACTOR * old_hParams[key] + hParam_updater[key]
 
             addKey = True
@@ -92,10 +87,9 @@ class MonteCarlo(HeuristicStrategist):
                 # weights consistent wins/losses above mixed
                 significance = np.power(winArr.dot(winArr), 1/2)
 
-                # proportional to p(deletion) = 1/n
-                # deletes significance = 1 keys immediately with Pr = 1
-                # eventually deletes every key with Pr = 1
-                if (np.random.rand() < 1 / significance):
+                # proportional to Pr(deletion) = (1/2)^n
+                # "only deletes very low-confidence estimates"
+                if (np.log(np.random.rand()) < significance * np.log(DELETION_RATIO)):
                     addKey = False
 
             if addKey:

@@ -106,6 +106,10 @@ class HeuristicStrategist(Strategist):
         # google the theory behind this later?
         INITIAL_TEMP = 2
 
+        # pings n times during training to keep tabs on progress
+        TRAINING_PINGS = 50
+        TPN = 0
+
         for epoch in range(nEpochs):
             temp = INITIAL_TEMP * (1 - epoch / nEpochs)
             hParam_updater = self.getInitial_hP_updater()
@@ -127,6 +131,17 @@ class HeuristicStrategist(Strategist):
                 game.play(players, training=True)
 
             self.update_hParams(hParam_updater)
+
+            # pings training progress as the bot trains
+            if (epoch / nEpochs > TPN / TRAINING_PINGS):
+                # updates TPN
+                TPN += 1
+
+                print("Training progress: \t", epoch / nEpochs)
+                print("sample game below: \n")
+
+                players = [self.getOptimalPlayer() for i in range(game.nPlayers)]
+                game.play(players, render=True)
 
     # updates hParams based on training games
     # update info is stored in hParam_updater obj
