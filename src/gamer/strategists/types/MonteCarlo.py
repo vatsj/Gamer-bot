@@ -58,7 +58,7 @@ class MonteCarlo(HeuristicStrategist):
 
         DISCOUNT_FACTOR = 1/2
 
-        MAX_SIZE = 10**6
+        MAX_SIZE = 10**4
         # significance += 1 --> Pr(deletion) *= D_R
         DELETION_RATIO = 1/2
 
@@ -67,6 +67,8 @@ class MonteCarlo(HeuristicStrategist):
         old_keys = old_hParams.keys()
         new_keys = hParam_updater.keys()
         all_keys = {*old_keys, *new_keys}
+
+        # if MC_dict gets too large, start pruning
         if len(all_keys) > MAX_SIZE:
             pruning = True
         else:
