@@ -114,14 +114,15 @@ class HeuristicStrategist(Strategist):
 
             zeros = np.zeros(game.nPlayers)
 
-            hVal = self.h_gameTree(self, gameState, turnNum, MAX_DEPTH, zeros, new_modifiers)
+            hVal = self.h_gameTree(gameState, turnNum, heuristicParams, MAX_DEPTH, zeros, new_modifiers)
+            # print(hVal)
             return hVal
 
         hVal = self.h(gameState, turnNum, heuristicParams)
         return hVal
 
     # helper fn for alpha-beta pruning through gameTree
-    def h_gameTree(self, gameState, turnNum, depth, min_winProbs, MODIFIERS):
+    def h_gameTree(self, gameState, turnNum, hParams, depth, min_winProbs, MODIFIERS):
 
         game = self.game
 
@@ -135,7 +136,7 @@ class HeuristicStrategist(Strategist):
 
         # if depth = 0, evaluate h at posn
         if depth == 0:
-            hVal = h_wrapper(self, gameState, turnNum, heuristicParams, MODIFIERS)
+            hVal = self.h_wrapper(gameState, turnNum, hParams, MODIFIERS)
             return hVal
 
         # if depth > 0, check each branch of game tree
@@ -159,12 +160,16 @@ class HeuristicStrategist(Strategist):
 
             # sorts moves in descending order (best moves first)
             hScore_order = np.argsort(-1 * np.array(move_hScores))
+            # print(hScore_order)
 
-            new_allMoves = copy.deepCopy(zeros)
-            for i in range(game.nPlayers):
-                new_allMoves[hScore_order[i]] = allMoves[i]
+            nMoves = len(allMoves)
+            new_allMoves = [0 for i in range(nMoves)]
+            for i in range(nMoves):
+                ith_loc = hScore_order[i]
+                new_allMoves[ith_loc] = allMoves[i]
 
             allMoves = new_allMoves
+            # print(allMoves)
 
         # keeps track of winProbs for player turnNum's best move
         optimal_winProbs = zeros
@@ -179,7 +184,7 @@ class HeuristicStrategist(Strategist):
 
             # recursively evaluates the position
             new_MWP = copy.deepcopy(min_winProbs)
-            curr_winProbs = self.h_gameTree(self, resulting_gameState, nextTurnNum, depth - 1, new_MWP, MODIFIERS)
+            curr_winProbs = self.h_gameTree(resulting_gameState, nextTurnNum, hParams, depth - 1, new_MWP, MODIFIERS)
 
             # checks if currMove is optimal
             turnPlayer_winProb = curr_winProbs[turnNum - 1]
@@ -241,7 +246,26 @@ class HeuristicStrategist(Strategist):
         # see link below for technical details:
         # https://en.wikipedia.org/wiki/Softmax_function#Reinforcement_learning
         if temp > 0:
-            softmax_scores = 1/temp * np.log(hScores)
+            # log_scores = []
+            # for elt in hScores:
+            #     currVal = None
+            #     if elt > 0:
+            #         currVal = np.log(elt)
+            #     else:
+            #         # minimum log-value of scores
+            #         MIN = -100
+            #         currVal = MIN
+            #
+            #     log_scores.append(currVal)
+
+            log_scores = np.log(hScores)
+
+            # replacing the pr = 0 moves with some minimum log-probability
+            MIN = -100
+            log_scores = np.maximum(log_scores, MIN * np.ones(len(allMoves)))
+            # print(log_scores)
+            
+            softmax_scores = 1/temp * log_scores
             move_probs = softmax(softmax_scores)
 
             # choosing random move given move_probs

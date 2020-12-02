@@ -58,7 +58,8 @@ class MonteCarlo(HeuristicStrategist):
 
         DISCOUNT_FACTOR = 1/2
 
-        MAX_SIZE = 10**4
+        # max size of MC_dict
+        MAX_SIZE = 10**5
         # significance += 1 --> Pr(deletion) *= D_R
         DELETION_RATIO = 1/2
 
@@ -73,6 +74,7 @@ class MonteCarlo(HeuristicStrategist):
             pruning = True
         else:
             pruning = False
+        # print(len(all_keys), pruning)
 
         new_hParams = self.getInitial_hParams()
 
@@ -80,6 +82,7 @@ class MonteCarlo(HeuristicStrategist):
         for key in all_keys:
             # winArr magnitude is bounded due to discounting
             winArr = DISCOUNT_FACTOR * old_hParams[key] + hParam_updater[key]
+            # print(winArr)
 
             addKey = True
 

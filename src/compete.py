@@ -78,10 +78,11 @@ def compete_strategist(game, strategist_types, nGames = 100):
 def analyze_strategist(game, strategist, InputPlayer):
 
     # assigns modifiers to strategist
-    strategist.modifiers["memo"] = True
+    # strategist.modifiers["memo"] = True
+    strategist.modifiers["GTA"] = True
 
     # small training time for bug-checking
-    TRAINING_TIME = 10**5
+    TRAINING_TIME = 10**3
     strategist.train(TRAINING_TIME)
     strategist.render = True
 
