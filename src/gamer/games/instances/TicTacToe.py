@@ -148,27 +148,28 @@ def winsStalemate(self, gameState, turnNum):
     # makes the game "more interesting" (closer to balanced)
     return 2
 
+# constants for rendering gameState
+SQUARE_SIZE = 3
+SQUARE_CHARS = {
+    0: ' ',
+    1: 'x',
+    2: 'o'
+}
+ROWCOL_CHARS = {
+    (False, False): None,
+    (True, False): '-',
+    (False, True): '|',
+    (True, True): '+',
+}
+
 # renders the game board
 def render_gameState(self, gameState):
 
     # first renders in terms of a 2d array
-    SQUARE_SIZE = 3
     square_center = (SQUARE_SIZE - 1) / 2
 
     arr_size = SIZE*(SQUARE_SIZE + 1) - 1
     render_arr = [[' ' for j in range(arr_size)] for i in range(arr_size)]
-
-    square_chars = {
-        0: ' ',
-        1: 'X',
-        2: 'O'
-    }
-    rowcol_chars = {
-        (False, False): None,
-        (True, False): '-',
-        (False, True): '|',
-        (True, True): '+',
-    }
 
     # fills in render_arr
     for i in range(arr_size):
@@ -186,7 +187,7 @@ def render_gameState(self, gameState):
                 square_j = (j - column_index) // (SQUARE_SIZE + 1)
                 square_coords = (square_i, square_j)
 
-                currChar = square_chars[getSquare(gameState, square_coords)]
+                currChar = SQUARE_CHARS[getSquare(gameState, square_coords)]
 
             # fills in rows/columns
 
@@ -195,7 +196,7 @@ def render_gameState(self, gameState):
             col_ind = (column_index == SQUARE_SIZE)
             rowcol_ind = (row_ind, col_ind)
 
-            rowcol_char = rowcol_chars[rowcol_ind]
+            rowcol_char = ROWCOL_CHARS[rowcol_ind]
             if (rowcol_char):
                 currChar = rowcol_char
 
@@ -219,23 +220,10 @@ def render_gameState(self, gameState):
 def render_gameBoard(self, gameState, info):
 
     # first renders in terms of a 2d array
-    SQUARE_SIZE = 3
     square_center = (SQUARE_SIZE - 1) / 2
 
     arr_size = SIZE*(SQUARE_SIZE + 1) - 1
     render_arr = [[' ' for j in range(arr_size)] for i in range(arr_size)]
-
-    square_chars = {
-        0: ' ',
-        1: 'X',
-        2: 'O'
-    }
-    rowcol_chars = {
-        (False, False): None,
-        (True, False): '-',
-        (False, True): '|',
-        (True, True): '+',
-    }
 
     # keeps track of current elt of info
     info_index = 0
@@ -258,7 +246,7 @@ def render_gameBoard(self, gameState, info):
 
                 currVal = getSquare(gameState, square_coords)
                 if currVal != 0:
-                    currChar = square_chars[currVal]
+                    currChar = SQUARE_CHARS[currVal]
                 else:
                     currChar = str(info[info_index])
                     info_index += 1
@@ -270,7 +258,7 @@ def render_gameBoard(self, gameState, info):
             col_ind = (column_index == SQUARE_SIZE)
             rowcol_ind = (row_ind, col_ind)
 
-            rowcol_char = rowcol_chars[rowcol_ind]
+            rowcol_char = ROWCOL_CHARS[rowcol_ind]
             if (rowcol_char):
                 currChar = rowcol_char
 

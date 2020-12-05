@@ -72,44 +72,32 @@ class HeuristicStrategist(Strategist):
 
         hVal = None
 
-        # searches memoizer for encoded posn
-        if memo:
+        # attempts to read from memoizer
+        if self.modifiers["memo"]:
+
+            # if posn is memo-ized, reads value from memoizer
             if posn in self.memoizer:
-
-                # memoizer gets wiped every epoch, and hParams are constant per epoch
-                # thus no need to delete mid-epoch
-
-                # if (np.random.rand() < PR_DELETION):
-                #
-                #     new_modifiers = copy.deepcopy(modifiers)
-                #     new_modifiers["memo"] = False
-                #
-                #     # compute and memoize new hval
-                #     hVal = self.h_wrapper(self, gameState, turnNum, heuristicParams, new_modifiers)
-                #     self.memoizer[posn] = hVal
-                # else:
-                #     # look up hval, DON'T re-memoize
-                #     hVal = self.memoizer[posn]
-
                 hVal = self.memoizer[posn]
+                return hVal
 
-            # computes and memoizes h value
-            else:
+            # otherwise attempts write to memoizer if memo = True
+            elif memo:
                 new_modifiers = copy.deepcopy(modifiers)
                 new_modifiers["memo"] = False
 
                 hVal = self.h_wrapper(gameState, turnNum, heuristicParams, new_modifiers)
                 self.memoizer[posn] = hVal
-
-            # returns regardless of memoization status
-            return hVal
+                return hVal
 
         # searches down game tree using multiplayer a-b pruning
         if GTA:
             # evaluates gameTree helper fn
 
             # modifiers are initialized, but without GTA
-            new_modifiers = copy.deepcopy(self.modifiers)
+            # new_modifiers = copy.deepcopy(self.modifiers)
+
+            # doesn't memoize new value after GTA
+            new_modifiers = copy.deepcopy(modifiers)
             new_modifiers["GTA"] = False
 
             zeros = np.zeros(game.nPlayers)
@@ -127,11 +115,24 @@ class HeuristicStrategist(Strategist):
         game = self.game
 
         # check if game has been won by any player
-        winner_ind = game.checkWin(game, gameState)
-        if winner_ind:
-            # player winner_ind wins with prob 1
+        winner = game.checkWin(game, gameState)
+        if winner:
+            # player `winner` wins with prob 1
             winProbs = np.zeros(game.nPlayers)
-            winProbs[winner_ind - 1] = 1
+            winProbs[winner - 1] = 1
+            return winProbs
+
+        allMoves = game.getLegalMoves(game, gameState, turnNum)
+        nextTurnNum = game.nextTurn(turnNum)
+
+        # checks if game is stalemated
+        # if so, returns winning player
+        if len(allMoves) == 0:
+            winner = game.winsStalemate(game, gameState, turnNum)
+
+            # player `winner` wins with prob 1
+            winProbs = np.zeros(game.nPlayers)
+            winProbs[winner - 1] = 1
             return winProbs
 
         # if depth = 0, evaluate h at posn
@@ -140,8 +141,6 @@ class HeuristicStrategist(Strategist):
             return hVal
 
         # if depth > 0, check each branch of game tree
-        allMoves = game.getLegalMoves(game, gameState, turnNum)
-        nextTurnNum = game.nextTurn(turnNum)
 
         zeros = np.zeros(game.nPlayers)
         ones = np.ones(game.nPlayers)
@@ -172,8 +171,9 @@ class HeuristicStrategist(Strategist):
             # print(allMoves)
 
         # keeps track of winProbs for player turnNum's best move
-        optimal_winProbs = zeros
-        optimal_tPwP = optimal_winProbs[turnNum - 1]
+        # instantiates to dummy values; to be overwritten
+        optimal_winProbs = None
+        optimal_tPwP = -1
 
         # iterates through moves, finds the best available
         for move in allMoves:
@@ -242,6 +242,9 @@ class HeuristicStrategist(Strategist):
             print(hScores)
             print(game.render_gameBoard(game, gameState, hScores_render))
 
+            # print("\nmodifiers:")
+            # print(self.modifiers)
+
         # determines move probabilities from hScores
         # see link below for technical details:
         # https://en.wikipedia.org/wiki/Softmax_function#Reinforcement_learning
@@ -264,7 +267,7 @@ class HeuristicStrategist(Strategist):
             MIN = -100
             log_scores = np.maximum(log_scores, MIN * np.ones(len(allMoves)))
             # print(log_scores)
-            
+
             softmax_scores = 1/temp * log_scores
             move_probs = softmax(softmax_scores)
 
