@@ -18,7 +18,14 @@ class InputPlayer(Player):
 
         print("\n Your turn - please enter a move.")
         print("All legal moves are listed below: ")
-        print(game.render_gameBoard(game, gameState, allMoves_inds))
+
+        # uses render_gameBoard if available, otherwise prints move dict
+        allMoves_rendered = game.render_gameBoard(game, gameState, allMoves_inds)
+        if allMoves_rendered:
+            print(allMoves_rendered)
+        else:
+            for ind in allMoves_inds:
+                print(ind, ": \t", allMoves[ind])
 
         move_ind = int(input())
         move = allMoves[move_ind]

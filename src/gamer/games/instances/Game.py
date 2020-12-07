@@ -45,9 +45,11 @@ class Game:
 
                 print("\n Player ", turnNum, " to move. \n")
 
+            allMoves = self.getLegalMoves(self, gameState, turnNum)
+
             # checks for stalemate
             # if so, determines winner
-            if len(self.getLegalMoves(self, gameState, turnNum)) == 0:
+            if not(allMoves):
                 winner = self.winsStalemate(self, gameState, turnNum)
 
                 if render:
@@ -63,7 +65,7 @@ class Game:
                 # move = turnPlayer.makeMove(turnPlayer, gameState)
 
                 # checks if move is legal
-                if not(move in self.getLegalMoves(self, gameState, turnNum)):
+                if not(move in allMoves):
                     raise Exception("Illegal move!")
 
                 # all ObserverPlayers observe move as it is made
@@ -117,9 +119,20 @@ class Game:
         """instance-specific method"""
         pass
 
+    # helper fn, returns size of allMoves = self.getLegalMoves()
+    # handles type differences in return set for getLegalMoves
+    def nMoves(self, allMoves):
+        """instance-specific method"""
+        pass
+
     # applies "player makes move" to game state
     # modifies gameState in place
     def applyMove(self, gameState, turnNum, move):
+        pass
+
+    # reverses most recent
+    # modifies gameState in place
+    def undoMove(self, gameState, turnNum, move):
         pass
 
     # checks if any player has won

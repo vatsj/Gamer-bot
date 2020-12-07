@@ -65,7 +65,7 @@ class HeuristicStrategist(Strategist):
         PR_DELETION = 1/10
 
         GTA = modifiers["GTA"]
-        MAX_DEPTH = 4
+        MAX_DEPTH = 2
 
         game = self.game
         posn = game.encode_posn(game, gameState, turnNum)
@@ -123,11 +123,12 @@ class HeuristicStrategist(Strategist):
             return winProbs
 
         allMoves = game.getLegalMoves(game, gameState, turnNum)
+        nMoves = game.nMoves(game, allMoves)
         nextTurnNum = game.nextTurn(turnNum)
 
         # checks if game is stalemated
         # if so, returns winning player
-        if len(allMoves) == 0:
+        if nMoves == 0:
             winner = game.winsStalemate(game, gameState, turnNum)
 
             # player `winner` wins with prob 1
@@ -142,6 +143,8 @@ class HeuristicStrategist(Strategist):
 
         # if depth > 0, check each branch of game tree
 
+        toy_gameState = copy.deepcopy(gameState)
+
         zeros = np.zeros(game.nPlayers)
         ones = np.ones(game.nPlayers)
 
@@ -149,11 +152,17 @@ class HeuristicStrategist(Strategist):
         # improves likelihood of a-b pruning cutting down search space
         if depth > 1:
 
+            # allMoves_list = []
             move_hScores = []
             for move in allMoves:
-                resulting_gameState = copy.deepcopy(gameState)
-                game.applyMove(game, resulting_gameState, turnNum, move)
-                curr_hScore = self.h_wrapper(resulting_gameState, nextTurnNum, hParams, MODIFIERS)[turnNum - 1]
+
+                # # adds move to allMoves_list
+                # allMoves_list.append(move)
+
+                # resulting_gameState = copy.deepcopy(gameState)
+                game.applyMove(game, toy_gameState, turnNum, move)
+                curr_hScore = self.h_wrapper(toy_gameState, nextTurnNum, hParams, MODIFIERS)[turnNum - 1]
+                game.undoMove(game, toy_gameState, turnNum, move)
 
                 move_hScores.append(curr_hScore)
 
@@ -161,7 +170,6 @@ class HeuristicStrategist(Strategist):
             hScore_order = np.argsort(-1 * np.array(move_hScores))
             # print(hScore_order)
 
-            nMoves = len(allMoves)
             new_allMoves = [0 for i in range(nMoves)]
             for i in range(nMoves):
                 ith_loc = hScore_order[i]
@@ -179,12 +187,15 @@ class HeuristicStrategist(Strategist):
         for move in allMoves:
 
             # applies chosen move to resulting gamestate
-            resulting_gameState = copy.deepcopy(gameState)
-            game.applyMove(game, resulting_gameState, turnNum, move)
+            # resulting_gameState = copy.deepcopy(gameState)
+            game.applyMove(game, toy_gameState, turnNum, move)
 
             # recursively evaluates the position
             new_MWP = copy.deepcopy(min_winProbs)
-            curr_winProbs = self.h_gameTree(resulting_gameState, nextTurnNum, hParams, depth - 1, new_MWP, MODIFIERS)
+            curr_winProbs = self.h_gameTree(toy_gameState, nextTurnNum, hParams, depth - 1, new_MWP, MODIFIERS)
+
+            # undoes move for this step (works recursively)
+            game.undoMove(game, toy_gameState, turnNum, move)
 
             # checks if currMove is optimal
             turnPlayer_winProb = curr_winProbs[turnNum - 1]
@@ -217,15 +228,22 @@ class HeuristicStrategist(Strategist):
     def makeTemperedMove(self, gameState, turnNum, hParams, temp, render = False):
 
         game = self.game
+
+        # computing info for next turn
         allMoves = game.getLegalMoves(game, gameState, turnNum)
+        nMoves = game.nMoves(game, allMoves)
         nextTurnNum = game.nextTurn(turnNum)
+
+        # copies gameState to test possible moves
+        toy_gameState = copy.deepcopy(gameState)
 
         # determines heuristic scores of each available move
         move_hScores = []
         for move in allMoves:
-            resulting_gameState = copy.deepcopy(gameState)
-            game.applyMove(game, resulting_gameState, turnNum, move)
-            curr_hScore = self.h_wrapper(resulting_gameState, nextTurnNum, hParams)[turnNum - 1]
+            # resulting_gameState = copy.deepcopy(gameState)
+            game.applyMove(game, toy_gameState, turnNum, move)
+            curr_hScore = self.h_wrapper(toy_gameState, nextTurnNum, hParams)[turnNum - 1]
+            game.undoMove(game, toy_gameState, turnNum, move)
 
             move_hScores.append(curr_hScore)
 
@@ -265,14 +283,14 @@ class HeuristicStrategist(Strategist):
 
             # replacing the pr = 0 moves with some minimum log-probability
             MIN = -100
-            log_scores = np.maximum(log_scores, MIN * np.ones(len(allMoves)))
+            log_scores = np.maximum(log_scores, MIN * np.ones(nMoves))
             # print(log_scores)
 
             softmax_scores = 1/temp * log_scores
             move_probs = softmax(softmax_scores)
 
             # choosing random move given move_probs
-            move_ind = np.random.choice(len(allMoves), p=move_probs)
+            move_ind = np.random.choice(nMoves, p=move_probs)
 
         # t = 0 case reduces to argmax
         else:

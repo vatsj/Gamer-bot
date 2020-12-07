@@ -50,11 +50,11 @@ def compete_player(game, player_types, nGames = 100):
 
     return compete(game, players, nGames)
 
+# small training time for bug-checking
+TRAINING_TIME = 10**1
+
 # strategist_types: array of types ((sub)classes) of strategist
 def compete_strategist(game, strategist_types, nGames = 100):
-
-    # small training time for bug-checking
-    TRAINING_TIME = 10**5
 
     # instantiates from strategist_types
     # strategists = []
@@ -78,11 +78,9 @@ def compete_strategist(game, strategist_types, nGames = 100):
 def analyze_strategist(game, strategist, InputPlayer):
 
     # assigns modifiers to strategist
-    strategist.modifiers["memo"] = True
-    strategist.modifiers["GTA"] = True
+    # strategist.modifiers["memo"] = True
+    # strategist.modifiers["GTA"] = True
 
-    # small training time for bug-checking
-    TRAINING_TIME = 10**3
     strategist.train(TRAINING_TIME)
     strategist.render = True
 

@@ -68,13 +68,14 @@ class MonteCarlo(HeuristicStrategist):
         old_keys = old_hParams.keys()
         new_keys = hParam_updater.keys()
         all_keys = {*old_keys, *new_keys}
+        nKeys = len(all_keys)
 
         # if MC_dict gets too large, start pruning
-        if len(all_keys) > MAX_SIZE:
+        if nKeys > MAX_SIZE:
             pruning = True
         else:
             pruning = False
-        # print(len(all_keys), pruning)
+        print(nKeys, pruning)
 
         new_hParams = self.getInitial_hParams()
 
