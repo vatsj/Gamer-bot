@@ -87,7 +87,7 @@ def winsStalemate(self, board, turnNum):
     return 2
 
 # renders the game board
-def render_board(self, board):
+def render_gameState(self, board):
     return str(board)
 
 # renders the game board filled with arbitrary info
@@ -117,6 +117,6 @@ me.applyMove = applyMove
 me.undoMove = undoMove
 me.checkWin = checkWin
 me.winsStalemate = winsStalemate
-me.render_board = render_board
+me.render_gameState = render_gameState
 me.render_gameBoard = render_gameBoard
 me.encode_posn = encode_posn

@@ -2,9 +2,9 @@
 # can also produce their "optimal player" for the game, to compete
 class Strategist:
 
-    # stores the class defn to spawn ObserverPlayer-s
+    # stores the class defn to spawn Player objects
     # set/stored as a class property from main.py
-    ObserverPlayer = None
+    players = None
 
     # takes in complete information about the finite game
     def __init__(self, game):
@@ -29,7 +29,7 @@ class Strategist:
     def getTrainerPlayer(self, turnNum):
 
         # ObserverPlayeris has strategist set to self (this class instance)
-        TP = self.ObserverPlayer(self.game, turnNum, self)
+        TP = self.players.Player(self.game, turnNum, self)
 
         def makeMove(gameState):
             return self.getTrainerMove(TP, gameState, turnNum, self.trainingParams)
@@ -56,7 +56,7 @@ class Strategist:
     # plays in terms of getOptimalMove
     def getOptimalPlayer(self, turnNum):
         # only have access to ObserverPlayer class
-        OP = self.ObserverPlayer(self.game, turnNum)
+        OP = self.players.Player(self.game, turnNum)
 
         def makeMove(gameState):
             return self.getOptimalMove(gameState, turnNum, self.trainingParams)

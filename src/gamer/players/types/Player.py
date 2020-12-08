@@ -10,6 +10,11 @@ class Player:
         # flag for rendering move info
         # self.render = False
 
+    # sets given strategist as observer
+    def setObserver(strategist):
+        # takes in a strategist as an observer object
+        self.observer = strategist
+
     # returns the move to be made
     # must be an element of self.game.getLegalMoves()
     def makeMove(self, gameState):

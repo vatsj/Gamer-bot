@@ -3,15 +3,15 @@ import gamer
 import compete
 
 # defines classes/objects for game/player
-# game = gamer.games.instances.T3
-game = gamer.games.instances.KTChess
+game = gamer.games.instances.T3
+# game = gamer.games.instances.KTChess
 
 playerType = gamer.players.types.RandomPlayer
 ObserverPlayer = gamer.players.types.ObserverPlayer
 InputPlayer = gamer.players.types.InputPlayer
 
 strategistType = gamer.strategists.types.MonteCarlo
-strategistType.ObserverPlayer = ObserverPlayer
+strategistType.players = gamer.players
 
 player_types = [playerType for i in range(game.nPlayers)]
 s_types = [strategistType for i in range(game.nPlayers)]
