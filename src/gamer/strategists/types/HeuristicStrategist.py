@@ -19,6 +19,14 @@ class HeuristicStrategist(Strategist):
         # trainingParams = heuristicParams
         self.trainingParams = self.getInitial_hParams()
 
+        # initializing paramater-less heuristic fn
+        # to be passed to TrainerPlayer-s
+        # re-evaluates each time based on current hParams
+        def heuristic(gameState, turnNum):
+            return self.h(gameState, turnNum, self.trainingParams)
+
+        self.heuristic = heuristic
+
         # unpacks kwargs
         MODIFIERS_DEFAULT = {
             # memo-izing values of h
@@ -45,6 +53,18 @@ class HeuristicStrategist(Strategist):
 
     # returns an initial value for hP_updater
     def getInitial_hP_updater(self):
+        """instance-specific method"""
+        pass
+
+    # hP_updater object given to TrainerPlayers
+    # observer methods synthesize player hP_updater into strategist hP_updater
+    def getPlayer_hP_updater(self):
+        """instance-specific method"""
+        pass
+
+    # updates hParams based on training games
+    # update info is stored in hParam_updater obj
+    def update_hParams(self):
         """instance-specific method"""
         pass
 
@@ -322,26 +342,32 @@ class HeuristicStrategist(Strategist):
             if (self.modifiers["memo"]):
                 self.memoizer = {}
 
+            # initializing temp for this epoch's players
+            # heuristic = lambda gameState, turnNum: self.h(gameState, turnNum, self.trainingParams)
             temp = INITIAL_TEMP * (1 - epoch / nEpochs)
-            hParam_updater = self.getInitial_hP_updater()
+
+            # hParam_updater is a property of the strategist
+            self.hParam_updater = self.getInitial_hP_updater()
 
             for game_count in range(EPOCH_SIZE):
 
                 # plays a training game against itself by default
                 players = []
                 for i in range(game.nPlayers):
-                    currPlayer = self.getTrainerPlayer(i + 1)
+                    # constructs TrainerPlayer as HeuristicPlayer
+                    currPlayer = self.getTrainerPlayer(i + 1, self.heuristic, temp)
 
                     # specific properties of TrainerPlayer-s
-                    currPlayer.temp = temp
-                    currPlayer.hParam_updater = hParam_updater
+                    # currPlayer.temp = temp
+                    # currPlayer.hParam_updater = hParam_updater
 
                     players.append(currPlayer)
 
                 # plays game against itelf
                 game.play(players, training=True)
 
-            self.update_hParams(hParam_updater)
+            # synthesizes hParam_updater with hParams
+            self.update_hParams()
 
             # pings training progress as the bot trains
             if (epoch / nEpochs > TPN / TRAINING_PINGS):
@@ -351,29 +377,68 @@ class HeuristicStrategist(Strategist):
                 print("Training progress: \t", epoch / nEpochs)
                 print("sample game below: \n")
 
-                players = [self.getOptimalPlayer(i + 1) for i in range(game.nPlayers)]
+                # optimal players with rendering flag on
+                players = []
+                for i in range(game.nPlayers):
+                    currPlayer = self.getOptimalPlayer(i + 1)
+                    # currPlayer.render = True
+
+                    players.append(currPlayer)
+
                 game.play(players, render=True)
 
-    # updates hParams based on training games
-    # update info is stored in hParam_updater obj
-    def update_hParams(self, hParam_updater):
+    # # produces moves for TrainerPlayers based on player and trainingParams
+    # def getTrainerMove(self, tp, gameState, turnNum, trainingParams):
+    #
+    #     # tempered move with temp given by player
+    #     temp = tp.temp
+    #     hParams = trainingParams
+    #
+    #     move = self.makeTemperedMove(gameState, turnNum, hParams, temp)
+    #     return move
+    #
+    # # produces optimal move for a given gameState
+    # # only a function of gameState, trainingParams
+    # def getOptimalMove(self, gameState, turnNum, trainingParams):
+    #
+    #     # tempered move with temp = 0
+    #     move = self.makeTemperedMove(gameState, turnNum, trainingParams, 0, self.render)
+    #     return move
+
+    # produces a HeuristicPlayer capable of playing games
+    def getTrainerPlayer(self, turnNum, heuristic, temp):
+
+        TP = self.players.types.HeuristicPlayer(self.game, turnNum, self.heuristic, temp)
+
+        # configuring trainer player properties
+        TP.setObserver(self)
+        TP.modifiers = self.modifiers
+        TP.hParam_updater = self.getPlayer_hP_updater()
+
+        return TP
+
+    # produces the player using the strategist's "optimal strategy"
+    def getOptimalPlayer(self, turnNum):
+
+        # optimal player has temp = 0
+        temp = 0
+
+        OP = self.players.types.HeuristicPlayer(self.game, turnNum, self.heuristic, temp)
+        OP.modifiers = self.modifiers
+
+        return OP
+
+    # OBSERVER METHODS
+
+    # canonical methods for TrainerPlayer observing move, result
+    # can store information through access to player
+    def observeMove(self, player, gameState, turnNum, move):
         """instance-specific method"""
         pass
 
-    # produces moves for TrainerPlayers based on player and trainingParams
-    def getTrainerMove(self, tp, gameState, turnNum, trainingParams):
+    def observeResult(self, player, gameState, winner):
+        """instance-specific method"""
+        pass
 
-        # tempered move with temp given by player
-        temp = tp.temp
-        hParams = trainingParams
-
-        move = self.makeTemperedMove(gameState, turnNum, hParams, temp)
-        return move
-
-    # produces optimal move for a given gameState
-    # only a function of gameState, trainingParams
-    def getOptimalMove(self, gameState, turnNum, trainingParams):
-
-        # tempered move with temp = 0
-        move = self.makeTemperedMove(gameState, turnNum, trainingParams, 0, self.render)
-        return move
+    # observes computation of heuristic fn
+    # we dont need a separate observer method for this....

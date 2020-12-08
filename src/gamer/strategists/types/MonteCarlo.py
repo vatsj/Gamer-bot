@@ -2,26 +2,14 @@ from .HeuristicStrategist import HeuristicStrategist
 
 import numpy as np
 
+import copy
+
 # for win/loss dictionary
 from collections import defaultdict
 
 # uses a heuristic fn h: gameState --> Pr(win) to determine move
 # trainingParams are precisely params of h
 class MonteCarlo(HeuristicStrategist):
-
-    # hParam: keeps track of games won/lost from the posn
-    # hParams: (gameState, turnNum) --> [Pr(player i wins)]
-    def getInitial_hParams(self):
-
-        MC_dict = defaultdict(lambda: np.zeros(self.game.nPlayers))
-        return MC_dict
-
-    # returns a win frequency dict
-    # identical to gI_hP
-    def getInitial_hP_updater(self):
-
-        MC_dict = defaultdict(lambda: np.zeros(self.game.nPlayers))
-        return MC_dict
 
     # looks up past Pr(win) from MC_dict
     def h(self, gameState, turnNum, heuristicParams):
@@ -41,6 +29,7 @@ class MonteCarlo(HeuristicStrategist):
         posn = game.encode_posn(game, gameState, turnNum)
 
         winArr = MC_dict[posn]
+        # print(winArr)
 
         ones = np.ones(game.nPlayers)
         # adds laplace smoothing as a Beta(1, 1) (uniform) prior
@@ -54,16 +43,20 @@ class MonteCarlo(HeuristicStrategist):
 
     # updates hParams based on training games
     # update info is stored in hParam_updater obj
-    def update_hParams(self, hParam_updater):
+    def update_hParams(self):
 
         DISCOUNT_FACTOR = 1/2
 
         # max size of MC_dict
         MAX_SIZE = 10**5
+        # aggressive pruning
+        # MAX_SIZE = 0
+
         # significance += 1 --> Pr(deletion) *= D_R
         DELETION_RATIO = 1/2
 
         old_hParams = self.trainingParams
+        hParam_updater = self.hParam_updater
 
         old_keys = old_hParams.keys()
         new_keys = hParam_updater.keys()
@@ -105,32 +98,78 @@ class MonteCarlo(HeuristicStrategist):
         self.trainingParams = new_hParams
 
     # overrides method to add movesList obj
-    def getTrainerPlayer(self, turnNum):
+    # def getTrainerPlayer(self, turnNum):
+    #
+    #     TP = super().getTrainerPlayer(turnNum)
+    #
+    #     # attaches position list used by observation fns
+    #     # eventually added to hParam_updater
+    #     TP.positionSet = set()
+    #
+    #     return TP
 
-        TP = super().getTrainerPlayer(turnNum)
+    # hParam: keeps track of games won/lost from the posn
+    # hParams: (gameState, turnNum) --> [Pr(player i wins)]
+    def getInitial_hParams(self):
 
-        # attaches position list used by observation fns
-        # eventually added to hParam_updater
-        TP.positionSet = set()
+        MC_dict = defaultdict(lambda: np.zeros(self.game.nPlayers))
+        return MC_dict
 
-        return TP
+    # returns a win frequency dict
+    # identical to gI_hP
+    def getInitial_hP_updater(self):
+
+        # MC_dict = defaultdict(lambda: np.zeros(self.game.nPlayers))
+        # return MC_dict
+
+        return self.getInitial_hParams()
+
+    # hP_updater object given to TrainerPlayers
+    # observer methods synthesize player hP_updater into strategist hP_updater
+    def getPlayer_hP_updater(self):
+
+        # list of encountered positions
+        # will be labeled with result on observeResult()
+        hP_updater = []
+
+        return hP_updater
+
+    # OBSERVER METHODS
 
     # canonical methods for TrainerPlayer observing move, result
     # can store information through access to player
-    def observeTrainerMove(self, player, gameState, turnNum, move):
+    def observeMove(self, player, gameState, turnNum, move):
 
         # adds position to list
         game = self.game
-        posn = game.encode_posn(game, gameState, turnNum)
-        player.positionSet.add(posn)
+
+        # applies, records, then reverses move
+        toy_gameState = copy.deepcopy(gameState)
+
+        game.applyMove(game, toy_gameState, turnNum, move)
+
+        nextTurnNum = game.nextTurn(turnNum)
+        posn = game.encode_posn(game, toy_gameState, nextTurnNum)
+
+        game.undoMove(game, toy_gameState, turnNum, move)
+
+        player.hParam_updater.append(posn)
 
     # adds list to hParam_updater
-    def observeTrainerResult(self, player, gameState, winner):
+    def observeResult(self, player, gameState, winner):
 
-        toRecord = player.positionSet
-        hParam_updater = player.hParam_updater
+        # player.hParam updater is a list of encountered positions
+        positionSet = player.hParam_updater
 
-        # records that each position was won by wniner
-        for posn in toRecord:
-            posn_results = hParam_updater[posn]
+        # label each encountered position with this game's winner
+        for posn in positionSet:
+            posn_results = self.hParam_updater[posn]
             posn_results[winner - 1] += 1
+
+        # toRecord = player.positionSet
+        # hParam_updater = player.hParam_updater
+        #
+        # # records that each position was won by wniner
+        # for posn in toRecord:
+        #     posn_results = hParam_updater[posn]
+        #     posn_results[winner - 1] += 1

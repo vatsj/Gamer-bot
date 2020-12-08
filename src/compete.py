@@ -51,7 +51,7 @@ def compete_player(game, player_types, nGames = 100):
     return compete(game, players, nGames)
 
 # small training time for bug-checking
-TRAINING_TIME = 10**1
+TRAINING_TIME = 10**5
 
 # strategist_types: array of types ((sub)classes) of strategist
 def compete_strategist(game, strategist_types, nGames = 100):
@@ -78,7 +78,7 @@ def compete_strategist(game, strategist_types, nGames = 100):
 def analyze_strategist(game, strategist, InputPlayer):
 
     # assigns modifiers to strategist
-    # strategist.modifiers["memo"] = True
+    strategist.modifiers["memo"] = True
     # strategist.modifiers["GTA"] = True
 
     strategist.train(TRAINING_TIME)
@@ -97,7 +97,8 @@ def analyze_strategist(game, strategist, InputPlayer):
             else:
                 curr_OP = strategist.getOptimalPlayer(i + 1)
                 # signals the player to render info about chosen moves
-                # curr_OP.render = True
+                curr_OP.render = True
+
                 players.append(curr_OP)
 
         # plays game, prompts to play again

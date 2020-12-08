@@ -72,8 +72,8 @@ class Game:
                 if training:
                     # each ObserverPlayer observes move
                     for op in players:
-                        if hasattr(op, "strategist"):
-                            op.strategist.observeTrainerMove(op, gameState, turnNum, move)
+                        if hasattr(op, "observer"):
+                            op.observer.observeMove(op, gameState, turnNum, move)
 
                 # applies move to gameState
                 # MODIFIES GAMESTATE IN PLACE
@@ -98,8 +98,8 @@ class Game:
         if training:
             # each ObserverPlayer observes move
             for op in players:
-                if hasattr(op, "strategist"):
-                    op.strategist.observeTrainerResult(op, gameState, winner)
+                if hasattr(op, "observer"):
+                    op.observer.observeResult(op, gameState, winner)
 
         return winner
 

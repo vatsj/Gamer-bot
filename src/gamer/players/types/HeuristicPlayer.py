@@ -23,6 +23,7 @@ class HeuristicPlayer(Player):
 
         super().__init__(game, turnNum)
 
+        # heuristic: gameState, turnNum --> Pr(win)
         self.HEURISTIC = heuristic
         self.TEMP = temp
 
@@ -37,6 +38,9 @@ class HeuristicPlayer(Player):
 
         self.modifiers = MODIFIERS_DEFAULT
 
+        # probability of deletion from memoizer
+        # unnecessary for arg-less heuristic per epoch
+        self.PR_DELETION = 0
         # max depth for game tree search
         self.MAX_DEPTH = 2
 
@@ -46,7 +50,7 @@ class HeuristicPlayer(Player):
     def makeMove(self, gameState):
 
         game = self.game
-        turnNum = self.nextTurnNum
+        turnNum = self.turnNum
 
         # computing info for next turn
         allMoves = game.getLegalMoves(game, gameState, turnNum)
@@ -61,7 +65,7 @@ class HeuristicPlayer(Player):
         for move in allMoves:
             # resulting_gameState = copy.deepcopy(gameState)
             game.applyMove(game, toy_gameState, turnNum, move)
-            curr_hScore = self.h_wrapper(toy_gameState, nextTurnNum, hParams)[turnNum - 1]
+            curr_hScore = self.h_wrapper(toy_gameState, nextTurnNum)[turnNum - 1]
             game.undoMove(game, toy_gameState, turnNum, move)
 
             move_hScores.append(curr_hScore)
@@ -69,7 +73,7 @@ class HeuristicPlayer(Player):
         hScores = np.array(move_hScores)
 
         # renders information about available moves
-        if render:
+        if self.render:
             # first decimal point in Pr(win)
             hScores_render = []
             for hS in hScores:
@@ -85,7 +89,7 @@ class HeuristicPlayer(Player):
         # determines move probabilities from hScores
         # see link below for technical details:
         # https://en.wikipedia.org/wiki/Softmax_function#Reinforcement_learning
-        if temp > 0:
+        if self.TEMP > 0:
 
             log_scores = np.log(hScores)
 
@@ -94,7 +98,7 @@ class HeuristicPlayer(Player):
             log_scores = np.maximum(log_scores, MIN * np.ones(nMoves))
             # print(log_scores)
 
-            softmax_scores = 1/temp * log_scores
+            softmax_scores = 1 / self.TEMP * log_scores
             move_probs = softmax(softmax_scores)
 
             # choosing random move given move_probs
@@ -108,6 +112,11 @@ class HeuristicPlayer(Player):
         return move
 
     # augments h with self.modifiers
+    # modifiers gameState during method, should be unchanged after method runs
+    """
+    All heuristic methods are allowed to reversibly modify gameState
+    cloning to create a toy_gameState happens outside h_wrapper, in makeMove
+    """
     def h_wrapper(self, gameState, turnNum, modifiers = None):
 
         # sets default value for modifiers
@@ -115,10 +124,7 @@ class HeuristicPlayer(Player):
             modifiers = self.modifiers
 
         memo = modifiers["memo"]
-        PR_DELETION = 1/10
-
         GTA = modifiers["GTA"]
-        MAX_DEPTH = 2
 
         game = self.game
         posn = game.encode_posn(game, gameState, turnNum)
@@ -128,9 +134,12 @@ class HeuristicPlayer(Player):
         # attempts to read from memoizer
         if self.modifiers["memo"]:
 
+            # gets access to memoizer from observer strategist
+            memoizer = self.observer.memoizer
+
             # if posn is memo-ized, reads value from memoizer
-            if posn in self.memoizer:
-                hVal = self.memoizer[posn]
+            if posn in memoizer:
+                hVal = memoizer[posn]
                 return hVal
 
             # otherwise attempts write to memoizer if memo = True
@@ -138,8 +147,8 @@ class HeuristicPlayer(Player):
                 new_modifiers = copy.deepcopy(modifiers)
                 new_modifiers["memo"] = False
 
-                hVal = self.h_wrapper(gameState, turnNum, heuristicParams, new_modifiers)
-                self.memoizer[posn] = hVal
+                hVal = self.h_wrapper(gameState, turnNum, new_modifiers)
+                memoizer[posn] = hVal
                 return hVal
 
         # searches down game tree using multiplayer a-b pruning
@@ -155,15 +164,15 @@ class HeuristicPlayer(Player):
 
             zeros = np.zeros(game.nPlayers)
 
-            hVal = self.h_gameTree(gameState, turnNum, heuristicParams, MAX_DEPTH, zeros, new_modifiers)
+            hVal = self.h_gameTree(gameState, turnNum, self.MAX_DEPTH, zeros, new_modifiers)
             # print(hVal)
             return hVal
 
-        hVal = self.h(gameState, turnNum, heuristicParams)
+        hVal = self.HEURISTIC(gameState, turnNum)
         return hVal
 
     # helper fn for alpha-beta pruning through gameTree
-    def h_gameTree(self, gameState, turnNum, hParams, depth, min_winProbs, MODIFIERS):
+    def h_gameTree(self, gameState, turnNum, depth, min_winProbs, MODIFIERS):
 
         game = self.game
 
@@ -191,12 +200,10 @@ class HeuristicPlayer(Player):
 
         # if depth = 0, evaluate h at posn
         if depth == 0:
-            hVal = self.h_wrapper(gameState, turnNum, hParams, MODIFIERS)
+            hVal = self.h_wrapper(gameState, turnNum, MODIFIERS)
             return hVal
 
         # if depth > 0, check each branch of game tree
-
-        toy_gameState = copy.deepcopy(gameState)
 
         zeros = np.zeros(game.nPlayers)
         ones = np.ones(game.nPlayers)
@@ -213,9 +220,9 @@ class HeuristicPlayer(Player):
                 # allMoves_list.append(move)
 
                 # resulting_gameState = copy.deepcopy(gameState)
-                game.applyMove(game, toy_gameState, turnNum, move)
-                curr_hScore = self.h_wrapper(toy_gameState, nextTurnNum, hParams, MODIFIERS)[turnNum - 1]
-                game.undoMove(game, toy_gameState, turnNum, move)
+                game.applyMove(game, gameState, turnNum, move)
+                curr_hScore = self.h_wrapper(gameState, nextTurnNum, MODIFIERS)[turnNum - 1]
+                game.undoMove(game, gameState, turnNum, move)
 
                 move_hScores.append(curr_hScore)
 
@@ -241,14 +248,14 @@ class HeuristicPlayer(Player):
 
             # applies chosen move to resulting gamestate
             # resulting_gameState = copy.deepcopy(gameState)
-            game.applyMove(game, toy_gameState, turnNum, move)
+            game.applyMove(game, gameState, turnNum, move)
 
             # recursively evaluates the position
             new_MWP = copy.deepcopy(min_winProbs)
-            curr_winProbs = self.h_gameTree(toy_gameState, nextTurnNum, hParams, depth - 1, new_MWP, MODIFIERS)
+            curr_winProbs = self.h_gameTree(gameState, nextTurnNum, depth - 1, new_MWP, MODIFIERS)
 
             # undoes move for this step (works recursively)
-            game.undoMove(game, toy_gameState, turnNum, move)
+            game.undoMove(game, gameState, turnNum, move)
 
             # checks if currMove is optimal
             turnPlayer_winProb = curr_winProbs[turnNum - 1]

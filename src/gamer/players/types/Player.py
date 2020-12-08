@@ -8,10 +8,10 @@ class Player:
         self.turnNum = turnNum
 
         # flag for rendering move info
-        # self.render = False
+        self.render = False
 
     # sets given strategist as observer
-    def setObserver(strategist):
+    def setObserver(self, strategist):
         # takes in a strategist as an observer object
         self.observer = strategist
 

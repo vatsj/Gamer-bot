@@ -7,7 +7,6 @@ game = gamer.games.instances.T3
 # game = gamer.games.instances.KTChess
 
 playerType = gamer.players.types.RandomPlayer
-ObserverPlayer = gamer.players.types.ObserverPlayer
 InputPlayer = gamer.players.types.InputPlayer
 
 strategistType = gamer.strategists.types.MonteCarlo
