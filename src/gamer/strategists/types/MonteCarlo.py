@@ -97,17 +97,6 @@ class MonteCarlo(HeuristicStrategist):
         # updates hParams value
         self.trainingParams = new_hParams
 
-    # overrides method to add movesList obj
-    # def getTrainerPlayer(self, turnNum):
-    #
-    #     TP = super().getTrainerPlayer(turnNum)
-    #
-    #     # attaches position list used by observation fns
-    #     # eventually added to hParam_updater
-    #     TP.positionSet = set()
-    #
-    #     return TP
-
     # hParam: keeps track of games won/lost from the posn
     # hParams: (gameState, turnNum) --> [Pr(player i wins)]
     def getInitial_hParams(self):
@@ -143,15 +132,18 @@ class MonteCarlo(HeuristicStrategist):
         # adds position to list
         game = self.game
 
-        # applies, records, then reverses move
-        toy_gameState = copy.deepcopy(gameState)
+        # records current gameState, NOT resulting one
+        posn = game.encode_posn(game, gameState, turnNum)
 
-        game.applyMove(game, toy_gameState, turnNum, move)
-
-        nextTurnNum = game.nextTurn(turnNum)
-        posn = game.encode_posn(game, toy_gameState, nextTurnNum)
-
-        game.undoMove(game, toy_gameState, turnNum, move)
+        # # applies, records, then reverses move
+        # toy_gameState = copy.deepcopy(gameState)
+        #
+        # game.applyMove(game, toy_gameState, turnNum, move)
+        #
+        # nextTurnNum = game.nextTurn(turnNum)
+        # posn = game.encode_posn(game, toy_gameState, nextTurnNum)
+        #
+        # game.undoMove(game, toy_gameState, turnNum, move)
 
         player.hParam_updater.append(posn)
 
@@ -165,11 +157,3 @@ class MonteCarlo(HeuristicStrategist):
         for posn in positionSet:
             posn_results = self.hParam_updater[posn]
             posn_results[winner - 1] += 1
-
-        # toRecord = player.positionSet
-        # hParam_updater = player.hParam_updater
-        #
-        # # records that each position was won by wniner
-        # for posn in toRecord:
-        #     posn_results = hParam_updater[posn]
-        #     posn_results[winner - 1] += 1

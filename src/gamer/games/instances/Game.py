@@ -3,6 +3,7 @@ class Game:
 
     # only initializes information about the game
     def __init__(self):
+        # set by instance games
         self.nPlayers = None
 
 
