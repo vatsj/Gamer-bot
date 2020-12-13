@@ -51,7 +51,7 @@ class Game:
             # checks for stalemate
             # if so, determines winner
             if not(allMoves):
-                winner = self.winsStalemate(self, gameState, turnNum)
+                winner = self.winsStalemate(gameState, turnNum)
 
                 if render:
                     print("Player ", turnNum, " has no valid moves!")
@@ -61,9 +61,9 @@ class Game:
             else:
 
                 # player whose turn it is makes move
-                # print(turnPlayer)
                 move = turnPlayer.makeMove(gameState)
-                # move = turnPlayer.makeMove(turnPlayer, gameState)
+                print(type(move))
+                for currMove in allMoves: print(type(currMove))
 
                 # checks if move is legal
                 if not(move in allMoves):
@@ -156,7 +156,7 @@ class Game:
         pass
 
     # renders the game board filled with arbitrary info
-    def render_gameBoard(self, gameState, info):
+    def render_gameInfo(self, gameState, info):
         """instance-specific method"""
         pass
 

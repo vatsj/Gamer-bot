@@ -1,15 +1,19 @@
-from .Game import Game
+from .TwoPGame import TwoPGame
+
+# to encode gameState as tuple
+from .helpers import tuplify
 
 # Game object representing the game tic-tac-toe
-T3 = Game()
-# print(T3)
-T3.nPlayers = 2
+T3 = TwoPGame()
+
 
 # template definitions for Game object
 me = T3
 
 # board size
 SIZE = 3
+
+EMPTY_SQUARE = 0
 
 # helper functions
 
@@ -24,34 +28,6 @@ def setSquare(gameState, coords, val):
     # print(gameState)
     gameState[i][j] = val
 
-# # construct board from list, not tuple
-# def getMutableBoard():
-#
-#     board = [[0 for j in range(SIZE)] for i in range(SIZE)]
-#     return board
-
-# turn nested list into nested tuple
-# doesn't modify inputted board state
-def tuplify(input):
-
-    # if list, proceed recursively
-    output = []
-    if isinstance(input, list):
-
-        # recursive calls
-        for elt in input:
-            output.append(tuplify(elt))
-
-        # turns main list into tuple
-        output = tuple(output)
-
-    # otherwise, return
-    else:
-        output = input
-
-    return output
-
-EMPTY_SQUARE = 0
 
 # returns the initial game state (upon starting a new game)
 def startState(self):
@@ -144,12 +120,6 @@ def checkWin(self, gameState):
 
     return False
 
-# determines winner in case of no legal moves
-def winsStalemate(self, gameState, turnNum):
-    # player that goes second wins ties
-    # makes the game "more interesting" (closer to balanced)
-    return 2
-
 # constants for rendering gameState
 SQUARE_SIZE = 3
 SQUARE_CHARS = {
@@ -219,7 +189,7 @@ def render_gameState(self, gameState):
 
 # renders the game board filled with arbitrary info
 # only handles info = [single-char array]
-def render_gameBoard(self, gameState, info):
+def render_gameInfo(self, gameState, info):
 
     # first renders in terms of a 2d array
     square_center = (SQUARE_SIZE - 1) / 2
@@ -285,7 +255,6 @@ def encode_posn(self, gameState, turnNum):
     encoded_gameState = tuplify(gameState)
     posn = (encoded_gameState, turnNum)
 
-    # print(gameState)
     # print(posn)
     return posn
 
@@ -424,6 +393,8 @@ def encode_posn_symmetric(self, gameState, turnNum):
     equiv_rep = min(gS_equivClass)
     # print(equiv_rep)
     posn = (equiv_rep, turnNum)
+
+    # print(posn)
     return posn
 
 # assigning methods to Game obj
@@ -433,8 +404,7 @@ me.nMoves = nMoves
 me.applyMove = applyMove
 me.undoMove = undoMove
 me.checkWin = checkWin
-me.winsStalemate = winsStalemate
 me.render_gameState = render_gameState
-me.render_gameBoard = render_gameBoard
+me.render_gameInfo = render_gameInfo
 # me.encode_posn = encode_posn
 me.encode_posn = encode_posn_symmetric

@@ -81,7 +81,7 @@ class HeuristicPlayer(Player):
 
             print("\nheuristic scores:")
             print(hScores)
-            print(game.render_gameBoard(game, gameState, hScores_render))
+            print(game.render_gameInfo(game, gameState, hScores_render))
 
             # print("\nmodifiers:")
             # print(self.modifiers)
@@ -191,7 +191,7 @@ class HeuristicPlayer(Player):
         # checks if game is stalemated
         # if so, returns winning player
         if nMoves == 0:
-            winner = game.winsStalemate(game, gameState, turnNum)
+            winner = game.winsStalemate(gameState, turnNum)
 
             # player `winner` wins with prob 1
             winProbs = np.zeros(game.nPlayers)

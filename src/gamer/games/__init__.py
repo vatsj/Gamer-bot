@@ -3,4 +3,5 @@
 from . import instances
 Game = instances.Game
 
-from .instances import helpers as helpers
+from . import instances
+helpers = instances.helpers

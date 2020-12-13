@@ -20,15 +20,23 @@ class CD_Node:
         # dict of pointers to adjacent CD_nodes
         # initialized to none, can be linked up via helper methods
         adjacent = {}
-        for dir in ADJACENCY_DIRS:
+        for dir in self.ADJACENCY_DIRS:
             adjacent[dir] = None
 
         self.adjacent = adjacent
 
+    # string representation only displays value
+    def __str__(self):
+        return str(self.value)
+
+    # helper method for tuplify encoder
+    def tuplify(self):
+        return __str__(self)
+
     # gets node adjacent to self in direction dir
     def getAdjacent(self, dir):
 
-        if dir in ADJACENCY_DIRS:
+        if dir in self.ADJACENCY_DIRS:
             adj_node = self.adjacent[dir]
             return adj_node
         # if dir is invalid direction, throw an error
@@ -38,7 +46,7 @@ class CD_Node:
     # sets self adjacent to target_node in direction dir
     def setAdjacent(self, dir, target_node):
 
-        if dir in ADJACENCY_DIRS:
+        if dir in self.ADJACENCY_DIRS:
             self.adjacent[dir] = target_node
         # if dir is invalid direction, throw an error
         else:
